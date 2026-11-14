@@ -48,7 +48,7 @@ color:white;font-size:2rem;cursor:pointer}
 <article class="card" data-pos="1"><h2>Companion App</h2><div class="art" aria-hidden="true">🗺️</div><p>Explore a sample festival map, schedule, workshops &amp; digital Maker Passport.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="2"><h2>Bot Battle Arena</h2><div class="art" aria-hidden="true">🤖</div><p>Prototype: pick parts, customize a bot, and enter a simulated arena.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="-2"><h2>Sponsorships</h2><div class="art" aria-hidden="true">🏆</div><p>Demo sponsor placements, branded challenges, and digital passport rewards.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
-<article class="card" data-pos="-1"><h2>Power Racers</h2><div class="art" aria-hidden="true">🏎️</div><p>Future concept: a simulated Power Racers challenge.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
+<article class="card" data-pos="-1"><h2>Power Racers</h2><div class="art" aria-hidden="true">🏎️</div><p>Play a top-down electric racer arcade challenge.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 </div><div class="controls"><button id="prev" aria-label="Previous card">‹</button><div class="dots" id="dots"></div><button id="next" aria-label="Next card">›</button></div></section><section class="details" style="max-width:1000px;margin:35px auto;text-align:left">
 <h2 style="text-align:center;font-size:2rem">Explore the sponsorship experience</h2>
 <p style="text-align:center;color:#dcd2f3">Clickable demonstration using fictional sponsors and sample festival activities.</p>
@@ -109,7 +109,7 @@ const closeModal=document.getElementById('quest-close');
 let returnFocus=null;
 function activateCard(i){
  if(i!==selected){set(i);return}
- if(i===3){document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return} if(i===1){window.location.href='companion.html';return} if(i===2){window.location.href='bot-battle.html';return}
+ if(i===3){document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return} if(i===4){window.location.href='power-racers.html';return} if(i===1){window.location.href='companion.html';return} if(i===2){window.location.href='bot-battle.html';return}
  returnFocus=document.activeElement;
  document.getElementById('quest-title').textContent=cardDetails[i].title;
  document.getElementById('quest-content').innerHTML=cardDetails[i].body;
