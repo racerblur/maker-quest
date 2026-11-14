@@ -99,7 +99,7 @@ document.getElementById("reset-badges").addEventListener("click",()=>{earned.cle
 <script>
 const cardDetails=[
  {title:"Meet K9",body:"<p>Meet K9, the original blue robot dog and the mascot of Maker Quest. K9 welcomes visitors to the festival experience, while the app helps them explore exhibits, activities, and challenges.</p><p><strong>Design note:</strong> The approved K9 artwork is used unchanged.</p>"},
- {title:"Companion App",body:"<p>A proposed mobile-friendly guide for navigating Maker Fest.</p><ul><li>Find exhibits and demonstrations on a festival map</li><li>Browse workshops and presentation schedules</li><li>Collect achievements in a digital Maker Passport</li><li>Discover challenges at participating booths</li></ul><p>Schedules and exhibitors shown in future mockups will be clearly labeled as samples until confirmed.</p>"},
+ {title:"Companion App",body:"<p>A proposed mobile-friendly guide for navigating Maker Fest.</p><ul><li>Find exhibits and demonstrations on a festival map</li><li>Browse workshops and presentation schedules</li><li>Collect achievements in a digital Maker Passport</li><li>Discover challenges at participating booths</li></ul><p>Explore the interactive prototype. All schedules, exhibitors, and map locations are labeled as samples until confirmed.</p>"},
  {title:"Bot Battle Arena",body:"<p>A playful, educational robot-building game concept.</p><ul><li>Customize chassis, wheels, armor, and weapons</li><li>Try manual driving or automated engineering battles</li><li>Compare robot designs and learn from each match</li><li>Potentially unlock parts by exploring real exhibits</li></ul><p>Play the new prototype from the Bot Battle Arena card.</p>"},
  {title:"Sponsorships",body:"<p>Explore fictional sponsor placements, including an exhibit spotlight, a branded challenge, and a digital badge.</p><p>The clickable sponsorship map is available below the carousel.</p>"},
  {title:"Power Racers",body:"<p>A potential future expansion: a simple, top-down arcade driving game inspired by Power Racing.</p><ul><li>Navigate a short course</li><li>Try timed challenges</li><li>Experiment with vehicle upgrades</li></ul><p>This is an optional future concept, not part of the initial launch.</p>"}
@@ -109,7 +109,7 @@ const closeModal=document.getElementById('quest-close');
 let returnFocus=null;
 function activateCard(i){
  if(i!==selected){set(i);return}
- if(i===3){document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return} if(i===2){window.location.href='bot-battle.html';return}
+ if(i===3){document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return} if(i===1){window.location.href='companion.html';return} if(i===2){window.location.href='bot-battle.html';return}
  returnFocus=document.activeElement;
  document.getElementById('quest-title').textContent=cardDetails[i].title;
  document.getElementById('quest-content').innerHTML=cardDetails[i].body;
