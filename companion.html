@@ -41,4 +41,4 @@ function renderEvents(filter='All'){currentEventFilter=filter;const host=$('even
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderEvents(b.dataset.filter)});
 $('reset').onclick=()=>{if(!confirm('Clear all demo passport badges on this device?'))return;earned.clear();save();render();choose(selected);$('toast').textContent='Demo passport reset.'};
 choose(selected);render();renderEvents();
-</script></body></html>
+</script><footer style="text-align:center;padding:24px 16px;color:#cdbfe0;font-size:.82rem;border-top:1px solid #ffffff24">© 2027 Maker Quest. All rights reserved.</footer></body></html>
