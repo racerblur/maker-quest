@@ -45,11 +45,11 @@ color:white;font-size:2rem;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.controls .dot,.controls .dot::after,.controls #prev,.controls #next{transition:none!important;animation:none!important}}
 @media (pointer:coarse){.controls button{min-width:48px;min-height:48px}.controls .dot,.controls .dot.active{min-width:42px;min-height:4px}.map-pin,.claim-btn,.reset-btn{touch-action:manipulation}.card{touch-action:pan-y}}.stage{touch-action:pan-y;user-select:none;-webkit-user-select:none}</style></head><body><header><div class="brand">MAKER <span>QUEST</span></div><nav><a href="#experience">Experience</a><a href="#experience">Games</a><a href="#experience">Sponsors</a></nav></header><main><div class="tag">Maker Fest companion experience · Proposal concept</div><h1>Build. <em>Explore.</em><br>Discover.</h1><p class="intro">Turn a day at Maker Fest into an adventure: explore exhibits, collect digital achievements, discover robot games, and connect with makers.</p><section id="experience" aria-label="Interactive proposal cards"><div class="stage">
 <article class="card" data-pos="0"><h2>Meet K9</h2><div class="art"><img src="assets/k9-original.png" alt="Original blue K9 robot dog mascot"></div><p>The friendly face of Maker Quest.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
+<article class="card" data-pos="-3"><h2>Video Showcase</h2><div class="art" aria-hidden="true">🎬</div><p>Watch five maker, robotics, 4-H and Power Racing outreach videos.</p><span class="card-action">TAP TO WATCH ↗</span></article>
 <article class="card" data-pos="1"><h2>Companion App</h2><div class="art" aria-hidden="true">🗺️</div><p>Explore a sample festival map, schedule, workshops &amp; digital Maker Passport.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="2"><h2>Bot Battle Arena</h2><div class="art" aria-hidden="true">🤖</div><p>Prototype: pick parts, customize a bot, and enter a simulated arena.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="-2"><h2>Sponsorships</h2><div class="art" aria-hidden="true">🏆</div><p>Demo sponsor placements, branded challenges, and digital passport rewards.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="-1"><h2>Power Racers</h2><div class="art" aria-hidden="true">🏎️</div><p>Play a top-down electric racer arcade challenge.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
-<article class="card" data-pos="-3"><h2>Video Showcase</h2><div class="art" aria-hidden="true">🎬</div><p>Watch five maker, robotics, 4-H and Power Racing outreach videos.</p><span class="card-action">TAP TO WATCH ↗</span></article>
 </div><div class="controls"><button id="prev" aria-label="Previous card">‹</button><div class="dots" id="dots"></div><button id="next" aria-label="Next card">›</button></div></section><section class="details" style="max-width:1000px;margin:35px auto;text-align:left">
 <h2 style="text-align:center;font-size:2rem">Explore the sponsorship experience</h2>
 <p style="text-align:center;color:#dcd2f3">Clickable demonstration using fictional sponsors and sample festival activities.</p>
@@ -111,10 +111,13 @@ const closeModal=document.getElementById('quest-close');
 let returnFocus=null;
 function activateCard(i){
  if(i!==selected){set(i);return}
- if(i===3){document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return} if(i===5){window.location.href='videos.html';return} if(i===4){window.location.href='power-racers.html';return} if(i===1){window.location.href='companion.html';return} if(i===2){window.location.href='bot-battle.html';return}
+ const title=cards[i].querySelector('h2').textContent;
+ const routes={'Video Showcase':'videos.html','Power Racers':'power-racers.html','Companion App':'companion.html','Bot Battle Arena':'bot-battle.html'};
+ if(routes[title]){window.location.href=routes[title];return}
+ if(title==='Sponsorships'){document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return}
  returnFocus=document.activeElement;
- document.getElementById('quest-title').textContent=cardDetails[i].title;
- document.getElementById('quest-content').innerHTML=cardDetails[i].body;
+ document.getElementById('quest-title').textContent=title;
+ document.getElementById('quest-content').innerHTML=cardDetails[0].body;
  modal.hidden=false;closeModal.focus();
 }
 function hideCardDetails(){modal.hidden=true;if(returnFocus&&returnFocus.focus)returnFocus.focus()}
