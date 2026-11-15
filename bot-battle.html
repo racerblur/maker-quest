@@ -23,9 +23,9 @@ body.in-battle .battle[hidden]{display:none}
 }
 @media(max-width:700px){
  html:has(body:not(.in-battle)),body:not(.in-battle){overflow:hidden;height:100%;overscroll-behavior:none}
- body:not(.in-battle){position:fixed;inset:0;width:100%}
+ body:not(.in-battle){position:fixed;inset:0;width:100%;height:var(--usable-height,100dvh)}
  body:not(.in-battle) header,body:not(.in-battle) .leaderboard,body:not(.in-battle) footer{display:none}
- body:not(.in-battle) #builder{position:fixed;inset:0;width:100%;height:100%;height:100dvh;margin:0;padding:calc(7px + env(safe-area-inset-top,0px)) 9px calc(8px + env(safe-area-inset-bottom,0px));border:0;border-radius:0;display:flex;flex-direction:column;gap:5px;overflow:hidden;max-width:none}
+ body:not(.in-battle) #builder{position:fixed;top:0;left:0;right:0;bottom:auto;width:100%;height:var(--usable-height,100dvh);margin:0;padding:calc(7px + env(safe-area-inset-top,0px)) 9px calc(8px + env(safe-area-inset-bottom,0px));border:0;border-radius:0;display:flex;flex-direction:column;gap:5px;overflow:hidden;max-width:none}
  body:not(.in-battle) #builder[hidden]{display:none}
  #builder .mode-select{flex:0 0 auto;gap:5px;margin:0}
  #builder .mode-select button{flex:1;min-width:0;padding:7px 3px;font-size:.77rem}
@@ -36,20 +36,44 @@ body.in-battle .battle[hidden]{display:none}
  #builder .bot-name-label input{padding:7px;font-size:16px;width:min(100%,300px);height:38px}
  #builder #nameHint{display:none}
  #builder .build-grid{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px;align-items:stretch;justify-content:flex-start}
- #builder .preview{flex:0 1 auto;min-height:0;max-width:none;width:auto;height:min(17dvh,135px);aspect-ratio:330 / 250;align-self:center;object-fit:contain}
- #builder .build-options{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:4px;text-align:center}
+ #builder .preview{flex:0 0 auto;min-height:0;max-width:none;width:auto;height:clamp(60px,13dvh,105px);aspect-ratio:330 / 250;align-self:center;object-fit:contain}
+ #builder .build-options{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:2px;text-align:center}
  #builder .build-options>div{min-height:0}
  #builder .build-options strong{display:block;font-size:.83rem;margin-bottom:3px}
  #builder .choice-row{display:grid;gap:4px;grid-template-columns:repeat(3,minmax(0,1fr));justify-content:stretch}
- #builder .choice-row button{min-width:0;min-height:35px;padding:5px 1px;font-size:.73rem;line-height:1.1;border-radius:9px}
+ #builder .choice-row button{min-width:0;min-height:30px;padding:3px 1px;font-size:.73rem;line-height:1.1;border-radius:9px}
  #builder [data-choice="wheels"]{grid-template-columns:repeat(2,minmax(0,1fr))}
- #builder .launch{flex:0 0 auto;align-self:stretch;margin:1px 0 0;padding:8px;font-size:.95rem;min-height:43px}
+ #builder .launch{flex:0 0 auto;align-self:stretch;margin:0;padding:5px;font-size:.9rem;min-height:37px}
 }
 @media(max-width:700px) and (max-height:650px){
  #builder .preview{height:75px}#builder .choice-row button{min-height:29px;padding:3px 1px}
  #builder .build-options strong{font-size:.75rem;margin:0}#builder .launch{min-height:36px;padding:5px}
 }
+@media(max-width:700px){
+ #builder{contain:layout}
+ #builder .build-options strong{font-size:.78rem;margin-bottom:1px}
+ #builder .choice-row{gap:3px}
+ #builder .mode-select button{padding:5px 2px}
+}
+@media(max-width:700px) and (max-height:760px){
+ #builder .preview{display:none}
+ #builder .build-grid{justify-content:center}
+ #builder .build-options{justify-content:space-evenly}
+}
 </style></head><body><header><a href="./">← Maker Quest</a><h1>🤖 Bot Battle Arena</h1><p>Build your bot. Outsmart the rival. Win the arena!</p><button id="soundToggle" type="button" aria-pressed="true" style="background:#34204f;color:#a8f5ff;border-color:#7e71b7;padding:9px 16px">🔊 Sound On</button> <button id="musicToggle" type="button" aria-pressed="true" style="background:#34204f;color:#ffe2a4;border-color:#7e71b7;padding:9px 16px">🎵 Music On</button><p class="mobile-audio-tip" role="note">🔊 Game sounds missing? Turn off Silent Mode and turn up your volume!</p></header><section class="builder" id="builder"><div class="mode-select"><button id="soloMode" aria-pressed="true">🤖 Solo vs Computer</button><button id="versusMode" aria-pressed="false">⚔️ 2-Player Battle</button></div><p id="buildStep">Player 1: Build your bot</p><h2>🔧 BUILD YOUR BOT</h2><p>First build and name your robot, then enter the arena!</p><label class="bot-name-label" for="botName">Your robot’s name <input id="botName" type="text" maxlength="18" placeholder="e.g. Bolt, Sparky, Robo Rex" autocomplete="off" aria-describedby="nameHint"></label><small id="nameHint">Up to 18 characters</small><div class="build-grid"><canvas class="preview" id="preview" width="330" height="250" aria-label="Live preview of your custom robot"></canvas><div class="build-options"><div><strong>1. Body</strong><div class="choice-row" data-choice="chassis"><button data-value="balanced" aria-pressed="true">🤖 Balanced</button><button data-value="light" aria-pressed="false">⚡ Speedster</button><button data-value="heavy" aria-pressed="false">🛡️ Tank</button></div></div><div><strong>2. Wheels</strong><div class="choice-row" data-choice="wheels"><button data-value="wheels" aria-pressed="true">⚙️ Wheels</button><button data-value="tracks" aria-pressed="false">🚜 Tracks</button></div></div><div><strong>3. Weapon</strong><div class="choice-row" data-choice="weapon"><button data-value="blaster" aria-pressed="true">🔵 Blaster</button><button data-value="rapid" aria-pressed="false">✨ Rapid</button><button data-value="heavy" aria-pressed="false">💥 Cannon</button><button data-value="spinner" aria-pressed="false">🌀 Spinner</button><button data-value="flipper" aria-pressed="false">🦾 Flipper</button><button data-value="ram" aria-pressed="false">💨 Ram</button></div></div></div></div><button class="launch" id="start">ENTER ARENA ▶</button></section><section class="battle" id="battle" hidden><button id="rebuild">🔧 Rebuild robot</button><div class="hud"><span id="playerHp">YOUR BOT ♥ 100</span><span id="timer">TIME 60</span><span id="enemyHp">RIVAL ♥ 100</span></div><div class="arena-viewport"><canvas id="arena" width="780" height="440" aria-label="Top-down robot battle arena"></canvas></div><div class="status" id="status" aria-live="polite">Choose a robot and weapon. Battles last up to 60 seconds!</div><div class="dual-controls"><div class="controls"><div class="pad"><button class="up" data-key="up" aria-label="Move up">▲</button><button class="left" data-key="left" aria-label="Move left">◀</button><button class="down" data-key="down" aria-label="Move down">▼</button><button class="right" data-key="right" aria-label="Move right">▶</button></div><button class="attack" data-key="fire">FIRE ⚡</button></div><div class="controls" id="p2Controls" hidden><div class="pad"><button class="up" data-key="p2up" aria-label="Player 2 move up">▲</button><button class="left" data-key="p2left" aria-label="Player 2 move left">◀</button><button class="down" data-key="p2down" aria-label="Player 2 move down">▼</button><button class="right" data-key="p2right" aria-label="Player 2 move right">▶</button></div><button class="attack" data-key="p2fire">FIRE ⚡</button></div></div><p id="instructions">Move with the arrows and hold FIRE. Contact weapons need you to get close! Blasters aim automatically! Keyboard: WASD / arrows + Space.</p></section><section class="leaderboard"><h2>🏆 Hourly Bot Battle Leaders</h2><p>Top 10 robots this hour · New round every hour (Eastern Time)</p><div class="clock" id="countdown">Loading countdown…</div><ol id="leaders"><li>Loading scores…</li></ol><p id="submitStatus" aria-live="polite"></p></section><script>
+function fitMobileBuilder(){
+ if(window.innerWidth>700)return;
+ const vv=window.visualViewport;
+ const height=vv?vv.height:window.innerHeight;
+ document.documentElement.style.setProperty('--usable-height',Math.floor(height)+'px');
+ const builder=document.getElementById('builder');
+ if(!builder)return;
+ const preview=builder.querySelector('.preview');
+ if(preview)preview.style.display=height<780?'none':'';
+}
+fitMobileBuilder();
+window.addEventListener('resize',fitMobileBuilder);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',fitMobileBuilder);
 const canvas=document.getElementById('arena'),ctx=canvas.getContext('2d'),keys=new Set(),status=document.getElementById('status');let arenaHeight=440;let player,enemy,shots=[],running=false,last=0,enemyShotTimer=0,playerShotTimer=0,timeLeft=60,roundId=0,hits=0,scoreSubmitted=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const build={chassis:'balanced',wheels:'wheels',weapon:'blaster'};let botName='YOUR BOT',mode='solo',buildStep=0;const builds=[build,{chassis:'balanced',wheels:'wheels',weapon:'blaster'}],names=['YOUR BOT','PLAYER 2'];
 // Original synthesized arcade sounds. Audio starts only after a user gesture.
