@@ -11,25 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Generate local voice recordings
+      - name: Download natural male announcer recordings
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq espeak ffmpeg
           mkdir -p assets/announcer
-          while IFS='|' read -r filename words; do
-            [ -z "$filename" ] && continue
-            espeak -s 170 -p 65 -v en-us --stdout "$words" | ffmpeg -loglevel error -y -i pipe:0 -ar 16000 -ac 1 -b:a 32k "assets/announcer/$filename.mp3"
-          done <<'LINES'
-          start|Racers ready! Three, two, one, GO!
-          crash1|Ouch! That's a wall, not a turn!
-          crash2|Nice parking job! Now try racing!
-          crash3|That obstacle isn't going anywhere!
-          low1|Battery low! Ease off the gas!
-          low2|Twenty percent left! Drive smarter!
-          empty|Out of juice! The race is over!
-          win|You win! Amazing driving!
-          lose|The computer wins! Better luck next time!
-          LINES
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=de21f71b153947c59a65217e960f46f9.mp3' -o assets/announcer/crash1.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=3b3403b0ede143e5bbb46f8675f61fe3.mp3' -o assets/announcer/crash2.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=641ff76bcaa443698f1ad6adb38880eb.mp3' -o assets/announcer/crash3.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=e56df70b56524fe9971c5353dfa97fa8.mp3' -o assets/announcer/low1.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=ad23b97fc7cb49a3b044cd2faedb3631.mp3' -o assets/announcer/low2.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=90cc2116dff6404aa72b3076322503c3.mp3' -o assets/announcer/empty.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=1380b6d787b74a04ae4764d7c19d0136.mp3' -o assets/announcer/win.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=70d5b386aa214ca2be7c2886f1b56784.mp3' -o assets/announcer/lose.mp3
       - name: Commit announcer recordings
         run: |
           git config user.name "github-actions[bot]"
