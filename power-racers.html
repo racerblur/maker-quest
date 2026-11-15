@@ -1,52 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Power Racers · Maker Quest</title><style>
-:root{font-family:system-ui,sans-serif;color:#fff;background:#201335}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#59308e,#201335 72%);min-height:100vh}header,main{max-width:950px;margin:auto;padding:16px}a{color:#8df2ff}h1{font-size:clamp(2.2rem,7vw,4rem);margin:10px 0}h1 span{color:#80ecff}p{color:#e0d2ef;line-height:1.45}.tag{color:#ffcd78;font-weight:800;letter-spacing:.12em}.panel{background:#ffffff10;border:1px solid #9b79c9;border-radius:18px;padding:17px;margin:15px 0}.garage{display:flex;flex-wrap:wrap;gap:12px}.garage label{flex:1 1 180px;font-weight:700}select,input{display:block;width:100%;font:inherit;border:2px solid #9e82ca;border-radius:10px;padding:12px;margin-top:7px;background:#2d1c4d;color:white}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}button{font:inherit;border:2px solid #8f73b8;border-radius:12px;background:#4a2d72;color:white;min-height:46px;padding:11px 17px;cursor:pointer;touch-action:none}button:focus-visible{outline:3px solid #85f4ff;outline-offset:2px}.primary{background:#ffd078;color:#241338;font-weight:900;border-color:#ffd078}.hud{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-weight:800}.hud span{color:#88efff}.track{width:100%;aspect-ratio:1.5;display:block;background:#2d4b44;border-radius:16px;border:3px solid #8d79b6;touch-action:none}.controls{display:flex;justify-content:space-between;gap:15px;margin-top:15px}.controls>div{display:flex;gap:9px}.controls button{font-weight:900;font-size:1.2rem;min-width:75px;min-height:64px;user-select:none}.controls .gas{background:#4b8e66}.controls .brake{background:#8e4c6d}.record{color:#ffdb8b}.notice{font-size:.83rem;color:#cfc1df}.status{font-weight:900;color:#a4f9de;min-height:24px}@media(max-width:600px){.controls button{min-width:57px;min-height:60px;padding:8px}.track{aspect-ratio:1.15}.panel{padding:11px}}</style></head><body><header><a href="./">← Maker Quest</a><h1>🏎️ Power <span>Racers</span></h1><div class="tag">ARCADE PROTOTYPE · FICTIONAL TRACK</div><p>Build your little electric racer, chase the fastest lap, and learn how different setups feel on the track.</p></header><main><section class="panel"><div class="garage"><label>Racer name<input id="name" maxlength="18" placeholder="My Racer" value="SPARK"></label><label>Vehicle setup<select id="setup"><option value="balanced">Balanced · All-rounder</option><option value="speed">Speed · Faster straights</option><option value="grip">Grip · Better cornering</option></select></label><label>Body color<select id="color"><option value="#59dfff">Electric blue</option><option value="#ff7cae">Hot pink</option><option value="#ffd26e">Lightning yellow</option><option value="#a5f78e">Neon green</option></select></label></div><div class="actions"><button id="start" class="primary">▶ Start 3-lap race</button><button id="reset">↺ Restart</button><button id="soundToggle" aria-pressed="true">🔊 Sound On</button><button id="musicToggle" aria-pressed="true">🎵 Music On</button><button id="testAudio" class="primary">🔊 Test Sound</button><label style="display:flex;align-items:center;gap:7px;font-weight:700"><input id="aiMode" type="checkbox" checked style="width:20px;height:20px;margin:0"> Race computer 🤖</label></div><p class="notice">🔊 On iPhone, turn off Silent Mode and raise the volume if you cannot hear the game.</p><p id="audioStatus" class="notice" role="status">Tap Test Sound to activate audio on iPhone.</p><div class="hud"><div>Lap <span id="lap">0 / 3</span></div><div>Time <span id="time">0:00.0</span></div><div>Best lap <span id="best">—</span></div><div>Computer <span id="aiLap">0 / 3</span></div></div><p class="status" id="status" role="status">Choose a setup, then start your race.</p><canvas id="track" class="track" width="900" height="600" aria-label="Top-down racing track with a small car"></canvas><div class="controls"><div><button data-key="left" aria-label="Steer left">◀ LEFT</button><button data-key="right" aria-label="Steer right">RIGHT ▶</button></div><div><button data-key="brake" class="brake">BRAKE</button><button data-key="gas" class="gas">GAS ⚡</button></div></div><p class="notice">Mobile: hold GAS to drive forward around the oval; LEFT / RIGHT change your racing lane. Keyboard: ↑ / W to accelerate, ← / → to steer, ↓ / S to brake. BRAKE overrides GAS and slows you to a stop. Hay bales and the CPU car block your path: change lanes to pass. Each full circuit counts as one lap. Race progress is local to this device.</p></section><p class="notice">Maker Quest Power Racers is an original, unofficial arcade demonstration. The fictional course, vehicle options, and lap times do not represent a confirmed festival event.</p></main><script>
-// Original synthesized arcade soundtrack and effects. Start audio only after a user gesture.
-let audioCtx=null,soundOn=true,musicOn=true,musicClock=0,musicStep=0,engineClock=0,oldSpeed=0,lastLapSound=0;
-async function activateAudio(){
- try{
-  const AC=window.AudioContext||window.webkitAudioContext;
-  if(!AC){$('audioStatus').textContent='Audio is not supported in this browser.';return false}
-  if(!audioCtx)audioCtx=new AC();
-  // Prime the output graph synchronously inside the user gesture for iOS Safari.
-  const buffer=audioCtx.createBuffer(1,1,audioCtx.sampleRate);
-  const source=audioCtx.createBufferSource();source.buffer=buffer;source.connect(audioCtx.destination);source.start(0);
-  if(audioCtx.state!=='running')await audioCtx.resume();
-  const ok=audioCtx.state==='running';
-  $('audioStatus').textContent=ok?'🔊 Audio ready':'🔇 Audio blocked. Tap Test Sound again.';
-  return ok;
- }catch(e){$('audioStatus').textContent='🔇 Audio could not start. Check Safari settings.';return false}
-}
-function tone(freq,duration=.13,type='square',volume=.07,slide=1,channel='effects'){
- if(!audioCtx||audioCtx.state!=='running'||(channel==='music'?!musicOn:!soundOn))return;
- const now=audioCtx.currentTime,osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
- osc.type=type;osc.frequency.setValueAtTime(Math.max(20,freq),now);
- osc.frequency.exponentialRampToValueAtTime(Math.max(20,freq*slide),now+duration);
- gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),now+.012);
- gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
- osc.connect(gain);gain.connect(audioCtx.destination);osc.start(now);osc.stop(now+duration+.015);
-}
-function effect(name){
- if(name==='start'){tone(330,.1);setTimeout(()=>tone(440,.12),110);setTimeout(()=>tone(660,.2),240)}
- if(name==='lap'){tone(550,.12);setTimeout(()=>tone(770,.15),130)}
- if(name==='hit')tone(105,.23,'sawtooth',.11,.4);
- if(name==='win'){tone(523,.15);setTimeout(()=>tone(659,.15),170);setTimeout(()=>tone(784,.3),340)}
- if(name==='lose')tone(240,.25,'triangle',.09,.55);
-}
-function audioFrame(dt){
- if(!audioCtx||audioCtx.state!=='running'||!running)return;
- musicClock+=dt;engineClock+=dt;
- if(musicOn&&musicClock>.23){
-  musicClock=0;const notes=[196,0,294,392,0,294,330,0,196,262,330,392,0,294,262,0];
-  const n=notes[musicStep++%notes.length];if(n)tone(n,.12,'triangle',.045,1,'music');
- }
- if(soundOn&&engineClock>.15&&car.speed>4){
-  engineClock=0;tone(70+car.speed*.42,.12,'sawtooth',.035,1.08);
- }
-}
-$('soundToggle').onclick=()=>{activateAudio();soundOn=!soundOn;$('soundToggle').textContent=soundOn?'🔊 Sound On':'🔇 Sound Off';$('soundToggle').setAttribute('aria-pressed',String(soundOn))};
-$('musicToggle').onclick=()=>{activateAudio();musicOn=!musicOn;$('musicToggle').textContent=musicOn?'🎵 Music On':'🎵 Music Off';$('musicToggle').setAttribute('aria-pressed',String(musicOn))};
-$('testAudio').onclick=async()=>{const ok=await activateAudio();if(ok){tone(440,.25,'sine',.2);setTimeout(()=>tone(660,.28,'sine',.2),280)}};
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&audioCtx&&audioCtx.state==='running')audioCtx.suspend().catch(()=>{})});
+:root{font-family:system-ui,sans-serif;color:#fff;background:#201335}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#59308e,#201335 72%);min-height:100vh}header,main{max-width:950px;margin:auto;padding:16px}a{color:#8df2ff}h1{font-size:clamp(2.2rem,7vw,4rem);margin:10px 0}h1 span{color:#80ecff}p{color:#e0d2ef;line-height:1.45}.tag{color:#ffcd78;font-weight:800;letter-spacing:.12em}.panel{background:#ffffff10;border:1px solid #9b79c9;border-radius:18px;padding:17px;margin:15px 0}.garage{display:flex;flex-wrap:wrap;gap:12px}.garage label{flex:1 1 180px;font-weight:700}select,input{display:block;width:100%;font:inherit;border:2px solid #9e82ca;border-radius:10px;padding:12px;margin-top:7px;background:#2d1c4d;color:white}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}button{font:inherit;border:2px solid #8f73b8;border-radius:12px;background:#4a2d72;color:white;min-height:46px;padding:11px 17px;cursor:pointer;touch-action:none}button:focus-visible{outline:3px solid #85f4ff;outline-offset:2px}.primary{background:#ffd078;color:#241338;font-weight:900;border-color:#ffd078}.hud{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-weight:800}.hud span{color:#88efff}.track{width:100%;aspect-ratio:1.5;display:block;background:#2d4b44;border-radius:16px;border:3px solid #8d79b6;touch-action:none}.controls{display:flex;justify-content:space-between;gap:15px;margin-top:15px}.controls>div{display:flex;gap:9px}.controls button{font-weight:900;font-size:1.2rem;min-width:75px;min-height:64px;user-select:none}.controls .gas{background:#4b8e66}.controls .brake{background:#8e4c6d}.record{color:#ffdb8b}.notice{font-size:.83rem;color:#cfc1df}.status{font-weight:900;color:#a4f9de;min-height:24px}@media(max-width:600px){.controls button{min-width:57px;min-height:60px;padding:8px}.track{aspect-ratio:1.15}.panel{padding:11px}}</style></head><body><header><a href="./">← Maker Quest</a><h1>🏎️ Power <span>Racers</span></h1><div class="tag">ARCADE PROTOTYPE · FICTIONAL TRACK</div><p>Build your little electric racer, chase the fastest lap, and learn how different setups feel on the track.</p></header><main><section class="panel"><div class="garage"><label>Racer name<input id="name" maxlength="18" placeholder="My Racer" value="SPARK"></label><label>Vehicle setup<select id="setup"><option value="balanced">Balanced · All-rounder</option><option value="speed">Speed · Faster straights</option><option value="grip">Grip · Better cornering</option></select></label><label>Body color<select id="color"><option value="#59dfff">Electric blue</option><option value="#ff7cae">Hot pink</option><option value="#ffd26e">Lightning yellow</option><option value="#a5f78e">Neon green</option></select></label></div><div class="actions"><button id="start" class="primary">▶ Start 3-lap race</button><button id="reset">↺ Restart</button><label style="display:flex;align-items:center;gap:7px;font-weight:700"><input id="aiMode" type="checkbox" checked style="width:20px;height:20px;margin:0"> Race computer 🤖</label></div><div class="hud"><div>Lap <span id="lap">0 / 3</span></div><div>Time <span id="time">0:00.0</span></div><div>Best lap <span id="best">—</span></div><div>Computer <span id="aiLap">0 / 3</span></div></div><p class="status" id="status" role="status">Choose a setup, then start your race.</p><canvas id="track" class="track" width="900" height="600" aria-label="Top-down racing track with a small car"></canvas><div class="controls"><div><button data-key="left" aria-label="Steer left">◀ LEFT</button><button data-key="right" aria-label="Steer right">RIGHT ▶</button></div><div><button data-key="brake" class="brake">BRAKE</button><button data-key="gas" class="gas">GAS ⚡</button></div></div><p class="notice">Mobile: hold GAS to drive forward around the oval; LEFT / RIGHT change your racing lane. Keyboard: ↑ / W to accelerate, ← / → to steer, ↓ / S to brake. BRAKE overrides GAS and slows you to a stop. Hay bales and the CPU car block your path: change lanes to pass. Each full circuit counts as one lap. Race progress is local to this device.</p></section><p class="notice">Maker Quest Power Racers is an original, unofficial arcade demonstration. The fictional course, vehicle options, and lap times do not represent a confirmed festival event.</p></main><script>
 const c=document.getElementById('track'),ctx=c.getContext('2d'),$=id=>document.getElementById(id),keys=new Set();
 const CX=450,CY=300,RX=335,RY=225,WIDTH=96,TAU=Math.PI*2;
 const settings={balanced:{max:245,acc:210,turn:2.6},speed:{max:310,acc:235,turn:2.1},grip:{max:225,acc:195,turn:3.4}};
@@ -62,9 +15,9 @@ function reset(){
  $('lap').textContent='0 / 3';$('aiLap').textContent=aiEnabled?'0 / 3':'Off';$('time').textContent='0:00.0';$('best').textContent=Number.isFinite(best)?fmt(best):'—';
  $('status').textContent='Ready! Hold GAS to race forward. LEFT / RIGHT change lanes.';draw();
 }
-async function start(){const ready=await activateAudio();reset();running=true;if(ready)effect('start');$('status').textContent=($('name').value.trim()||'Racer')+' — GO! Beat the computer!'}
+function start(){reset();running=true;$('status').textContent=($('name').value.trim()||'Racer')+' — GO! Beat the computer!'}
 $('start').onclick=start;$('reset').onclick=reset;$('aiMode').onchange=reset;
-function finish(winner){effect(winner==='player'?'win':'lose');running=false;finished=true;keys.clear();$('status').textContent=winner==='player'?'🏆 You win! '+fmt(elapsed)+' total!':'🤖 Computer wins! Try again!'}
+function finish(winner){running=false;finished=true;keys.clear();$('status').textContent=winner==='player'?'🏆 You win! '+fmt(elapsed)+' total!':'🤖 Computer wins! Try again!'}
 function update(dt){
  if(!running)return;
  elapsed+=dt;
@@ -84,7 +37,7 @@ function update(dt){
  const gap=(from,to)=>((to-from)%TAU+TAU)%TAU*TRACK_LENGTH/TAU;
  for(const bale of HAY){const d=gap(playerPhase,bale.p);if(d<car.speed*dt+34&&Math.abs(lane-bale.l)<30)allowed=Math.min(allowed,Math.max(0,(d-34)/TRACK_LENGTH*TAU))}
  if(aiEnabled){const d=gap(playerPhase,aiPhase);if(d<car.speed*dt+55&&Math.abs(lane-aiLane)<30)allowed=Math.min(allowed,Math.max(0,(d-55)/TRACK_LENGTH*TAU))}
- if(allowed<intended-.000001){if(car.speed>10&&hitCooldown<=0)effect('hit');car.speed=0;if(hitCooldown<=0){$('status').textContent='🚧 Blocked! Change lanes to pass.';hitCooldown=1.2}}
+ if(allowed<intended-.000001){car.speed=0;if(hitCooldown<=0){$('status').textContent='🚧 Blocked! Change lanes to pass.';hitCooldown=1.2}}
  hitCooldown=Math.max(0,hitCooldown-dt);
  playerPhase+=allowed;
  const p=playerPhase%TAU;
@@ -96,7 +49,7 @@ function update(dt){
   lap=newLap;
   const lt=elapsed-lapStart;lapStart=elapsed;best=Math.min(best,lt);
   $('best').textContent=fmt(best);$('lap').textContent=lap+' / 3';
-  $('status').textContent='🏁 Lap '+lap+' complete · '+fmt(lt);effect('lap');
+  $('status').textContent='🏁 Lap '+lap+' complete · '+fmt(lt);
   if(lap>=3)finish('player');
  }
  if(aiEnabled&&running){
@@ -139,10 +92,10 @@ function draw(){
  if(offroad&&running){ctx.fillStyle='#ffe18b';ctx.font='bold 20px system-ui';ctx.fillText('OFF ROAD — SLOW DOWN!',CX,80)}
  if(!running&&!finished){ctx.fillStyle='#ffffffb8';ctx.font='bold 19px system-ui';ctx.fillText('PRESS START TO RACE',CX,95)}
 }
-function loop(ts){const dt=Math.min(.035,(ts-last)/1000||0);last=ts;update(dt);audioFrame(dt);draw();requestAnimationFrame(loop)}
+function loop(ts){const dt=Math.min(.035,(ts-last)/1000||0);last=ts;update(dt);draw();requestAnimationFrame(loop)}
 const keymap={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'gas',ArrowDown:'brake',a:'left',d:'right',w:'gas',s:'brake'};
-document.addEventListener('keydown',e=>{const k=keymap[e.key];if(k){activateAudio();e.preventDefault();keys.add(k)}});
+document.addEventListener('keydown',e=>{const k=keymap[e.key];if(k){e.preventDefault();keys.add(k)}});
 document.addEventListener('keyup',e=>{const k=keymap[e.key];if(k)keys.delete(k)});
-document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{activateAudio();e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(k)});for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>keys.delete(k))});
+document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(k)});for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>keys.delete(k))});
 window.addEventListener('blur',()=>keys.clear());reset();requestAnimationFrame(loop);
 </script><footer style="text-align:center;padding:24px 16px;color:#cdbfe0;font-size:.82rem;border-top:1px solid #ffffff24"><div class="fubar-credit" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;margin:0 auto 14px"><span>Brought to you by</span><a href="https://fubarlabs.org/" target="_blank" rel="noopener noreferrer" aria-label="Visit FUBAR Labs website" style="display:inline-flex;align-items:center;gap:9px;color:inherit;font-weight:800;text-decoration:none"><img src="https://gscrl.org/images/sponsors/fubarlabs.png" alt="FUBAR Labs official green and yellow circular logo" width="58" height="58" loading="lazy" style="width:58px;height:58px;object-fit:contain;border-radius:50%">FUBAR Labs</a></div>© 2027 Maker Quest. All rights reserved.</footer></body></html>
