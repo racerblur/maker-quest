@@ -1,0 +1,14 @@
+{
+  "name": "maker-quest-auth-staging",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "maker-quest-staging-db",
+      "database_id": "REPLACE_WITH_STAGING_D1_DATABASE_UUID"
+    }
+  ]
+}
