@@ -58,11 +58,12 @@ color:white;font-size:2rem;cursor:pointer}
  main>.intro{flex:0 0 auto;margin:6px auto 4px;max-width:390px;font-size:clamp(.72rem,2.8vw,.9rem);line-height:1.35}
  #experience{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:stretch;width:100%}
  #experience .stage{flex:1 1 0;min-height:0;height:auto;margin:3px 0 0;perspective:none;overflow:hidden;isolation:isolate}
- #experience .card{top:50%;left:50%;margin:0;width:min(88vw,370px);height:min(100%,490px);max-height:100%;padding:12px 13px 14px;transform-origin:center center;translate:-50% -50%;border-radius:17px;gap:5px}
+ #experience .card{top:50%;left:50%;margin:0;width:min(70vw,340px);height:min(100%,490px);max-height:100%;padding:12px 13px 14px;transform-origin:center center;translate:-50% -50%;border-radius:17px;gap:5px}
  #experience .card[data-pos="0"]{transform:translateX(0) rotateY(0) scale(1);opacity:1}
- #experience .card[data-pos="-1"],#experience .card[data-pos="1"]{transform:translateX(75%) scale(.75);opacity:0;pointer-events:none}
- #experience .card[data-pos="-1"]{transform:translateX(-75%) scale(.75)}
+ #experience .card[data-pos="-1"],#experience .card[data-pos="1"]{transform:translateX(76%) rotateY(-10deg) scale(.82);opacity:.72;pointer-events:auto;filter:brightness(.8)}
+ #experience .card[data-pos="-1"]{transform:translateX(-76%) rotateY(10deg) scale(.82)}
  #experience .card[data-pos="-2"],#experience .card[data-pos="2"],#experience .card[data-pos="-3"],#experience .card[data-pos="3"]{opacity:0;pointer-events:none}
+ #experience .card[data-pos="0"]{filter:none;box-shadow:0 16px 38px #100a2b99,0 0 0 2px #6beaff77}
  #experience .card h2{flex:0 0 auto;font-size:clamp(1.1rem,4.5vw,1.55rem);margin:0}
  #experience .card .art{flex:1 1 0;min-height:0;height:auto;width:100%;font-size:clamp(3.4rem,16vw,6rem)}
  #experience .card .art img{object-fit:contain}
