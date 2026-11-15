@@ -1,0 +1,32 @@
+name: Generate natural Bot Battle announcer clips
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/bot-voice.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download HeyGen male voice recordings
+        run: |
+          mkdir -p assets/announcer
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=90250a14c5974645907a073463fabb3f.mp3' -o assets/announcer/bot-welcome.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=5a7909c4e9004a9f8aa432419d1e07b7.mp3' -o assets/announcer/bot-hit.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=dd3bc519e59043b1925c55e9566efb2a.mp3' -o assets/announcer/bot-miss.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=3d01e735f91547ae91fc02eb07c63e0d.mp3' -o assets/announcer/bot-wall.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=0f2704c7849642baa7af95f885488457.mp3' -o assets/announcer/bot-ouch.mp3
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=219fa5f5e22e48bcb286c776f5a877ce.mp3' -o assets/announcer/bot-collision.mp3
+      - name: Commit bot announcer audio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/announcer/bot-*.mp3
+          if ! git diff --cached --quiet; then
+            git commit -m "Add natural Bot Battle announcer recordings"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
