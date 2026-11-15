@@ -34,5 +34,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          curl -fL --retry 3 'https://resource2.heygen.ai/text_to_speech/1a324667623b4d2a9215920c67536db6/f49763c1a284420b8f25f16472d8738e/id=ebbac0af50ef46abb9c39b4e08f84203.mp3' -o assets/announcer/start.mp3
           git add assets/announcer/*.mp3
           if ! git diff --cached --quiet; then git commit -m "Add prerecorded arcade announcer audio"; git pull --rebase origin main; git push origin HEAD:main; fi
