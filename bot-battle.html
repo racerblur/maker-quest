@@ -154,6 +154,75 @@ body.in-battle .battle[hidden]{display:none}
  #builder .choice-row button{min-height:31px;font-size:.72rem}
  #builder .build-options .choice-art{width:23px;height:23px;flex-basis:23px}
 }
+/* v30: intentional arcade-card composition; eliminate giant gaps between equipment rows. */
+@media(max-width:700px){
+ body:not(.in-battle) #builder{
+  background:radial-gradient(ellipse at 50% 24%,#66429b 0%,#3c235f 54%,#241536 100%);
+  grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto;
+  gap:5px;
+  padding:8px 10px calc(9px + env(safe-area-inset-bottom,0px));
+ }
+ #builder .mode-select{gap:7px}
+ #builder .mode-select button{border-radius:13px;box-shadow:0 3px 0 #21113955}
+ #builder #buildStep{font-size:.74rem;color:#ddc9f1}
+ #builder h2{font-size:1.16rem;letter-spacing:.045em;text-shadow:0 2px 8px #160b3480}
+ #builder .bot-name-label{font-size:.78rem}
+ #builder .bot-name-label input{border-radius:13px;background:#211538dd;box-shadow:inset 0 2px 5px #100b2455}
+ #builder .build-grid{
+  display:grid;grid-template-rows:minmax(105px,1fr) auto;
+  gap:8px;min-height:0;
+ }
+ #builder canvas.preview{
+  width:auto!important;height:100%!important;
+  max-width:min(100%,340px)!important;max-height:240px!important;
+  min-width:0!important;min-height:0!important;
+  border:3px solid #b49af0;
+  border-radius:18px;
+  background:#201535;
+  box-shadow:0 8px 22px #110a2866,0 0 0 4px #8b5ed333;
+ }
+ #builder .build-options{
+  display:flex;flex-direction:column;justify-content:flex-start;
+  flex:0 0 auto;gap:9px;min-height:0;
+ }
+ #builder .build-options>div{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+ #builder .build-options strong{font-size:.81rem;letter-spacing:.025em;text-align:left;padding-left:5px;color:#f4e7ff}
+ #builder .choice-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ #builder .choice-row button{
+  min-height:43px;border-radius:12px;border:1.5px solid #a98ad9;
+  background:linear-gradient(160deg,#593c84,#39245c);
+  box-shadow:0 3px 0 #1a102b88;
+  font-size:clamp(.66rem,2.8vw,.82rem);padding:4px 2px;
+  gap:4px;
+ }
+ #builder .choice-row button[aria-pressed="true"]{
+  background:linear-gradient(150deg,#82f7ff,#49d4ea);
+  border-color:#fff;
+  box-shadow:0 0 0 1px #fff9,0 4px 14px #44e6ff55;
+ }
+ #builder .build-options .choice-art{width:28px;height:28px;flex-basis:28px}
+ #builder [data-choice="wheels"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #builder #leaderboardPanel{
+  min-height:66px;max-height:80px;
+  border:1.5px solid #a987df;
+  background:linear-gradient(115deg,#34214e,#281a42);
+  border-radius:14px;box-shadow:0 3px 12px #130a2c44;
+ }
+ #builder .launch{
+  border-radius:14px;min-height:46px;
+  background:linear-gradient(180deg,#ffe091,#ffbd50);
+  box-shadow:0 4px 0 #b36d2d,0 5px 15px #140b2e55;
+  letter-spacing:.03em;
+ }
+}
+@media(max-width:700px) and (max-height:720px){
+ #builder .build-grid{grid-template-rows:minmax(65px,1fr) auto;gap:4px}
+ #builder .build-options{gap:4px}
+ #builder .choice-row button{min-height:33px}
+ #builder .build-options .choice-art{width:21px;height:21px;flex-basis:21px}
+ #builder #leaderboardPanel{min-height:55px;max-height:65px}
+ #builder .launch{min-height:37px}
+}
 </style></head><body><header><a href="./">← Maker Quest</a><h1>🤖 Bot Battle Arena</h1><p>Build your bot. Outsmart the rival. Win the arena!</p><button id="soundToggle" type="button" aria-pressed="true" style="background:#34204f;color:#a8f5ff;border-color:#7e71b7;padding:9px 16px">🔊 Sound On</button> <button id="musicToggle" type="button" aria-pressed="true" style="background:#34204f;color:#ffe2a4;border-color:#7e71b7;padding:9px 16px">🎵 Music On</button><p class="mobile-audio-tip" role="note">🔊 Game sounds missing? Turn off Silent Mode and turn up your volume!</p></header><section class="builder" id="builder"><div class="mode-select"><button id="soloMode" aria-pressed="true">🤖 Solo vs Computer</button><button id="versusMode" aria-pressed="false">⚔️ 2-Player Battle</button></div><p id="buildStep">Player 1: Build your bot</p><h2>🔧 BUILD YOUR BOT</h2><p>First build and name your robot, then enter the arena!</p><label class="bot-name-label" for="botName">Your robot’s name <input id="botName" type="text" maxlength="18" placeholder="e.g. Bolt, Sparky, Robo Rex" autocomplete="off" aria-describedby="nameHint"></label><small id="nameHint">Up to 18 characters</small><div class="build-grid"><canvas class="preview" id="preview" width="330" height="250" aria-label="Live preview of your custom robot"></canvas><div class="build-options"><div><strong>1. Body</strong><div class="choice-row" data-choice="chassis"><button data-value="balanced" aria-pressed="true">🤖 Balanced</button><button data-value="light" aria-pressed="false">⚡ Speedster</button><button data-value="heavy" aria-pressed="false">🛡️ Tank</button></div></div><div><strong>2. Wheels</strong><div class="choice-row" data-choice="wheels"><button data-value="wheels" aria-pressed="true">⚙️ Wheels</button><button data-value="tracks" aria-pressed="false">🚜 Tracks</button></div></div><div><strong>3. Weapon</strong><div class="choice-row" data-choice="weapon"><button data-value="blaster" aria-pressed="true">🔵 Blaster</button><button data-value="rapid" aria-pressed="false">✨ Rapid</button><button data-value="heavy" aria-pressed="false">💥 Cannon</button><button data-value="spinner" aria-pressed="false">🌀 Spinner</button><button data-value="flipper" aria-pressed="false">🦾 Flipper</button><button data-value="ram" aria-pressed="false">💨 Ram</button></div></div></div></div><section class="leaderboard" id="leaderboardPanel"><h2>🏆 Hourly Leaders</h2><div class="clock" id="countdown">Loading countdown…</div><ol id="leaders"><li>Loading scores…</li></ol><p id="submitStatus" aria-live="polite"></p></section><button class="launch" id="start">ENTER ARENA ▶</button></section><section class="battle" id="battle" hidden><button id="rebuild">🔧 Rebuild robot</button><div class="hud"><span id="playerHp">YOUR BOT ♥ 100</span><span id="timer">TIME 60</span><span id="enemyHp">RIVAL ♥ 100</span></div><div class="arena-viewport"><canvas id="arena" width="780" height="440" aria-label="Top-down robot battle arena"></canvas></div><div class="status" id="status" aria-live="polite">Choose a robot and weapon. Battles last up to 60 seconds!</div><div class="dual-controls"><div class="controls"><div class="pad"><button class="up" data-key="up" aria-label="Move up">▲</button><button class="left" data-key="left" aria-label="Move left">◀</button><button class="down" data-key="down" aria-label="Move down">▼</button><button class="right" data-key="right" aria-label="Move right">▶</button></div><button class="attack" data-key="fire">FIRE ⚡</button></div><div class="controls" id="p2Controls" hidden><div class="pad"><button class="up" data-key="p2up" aria-label="Player 2 move up">▲</button><button class="left" data-key="p2left" aria-label="Player 2 move left">◀</button><button class="down" data-key="p2down" aria-label="Player 2 move down">▼</button><button class="right" data-key="p2right" aria-label="Player 2 move right">▶</button></div><button class="attack" data-key="p2fire">FIRE ⚡</button></div></div><p id="instructions">Move with the arrows and hold FIRE. Contact weapons need you to get close! Blasters aim automatically! Keyboard: WASD / arrows + Space.</p></section><script>
 function fitMobileBuilder(){
  if(window.innerWidth>700)return;
@@ -219,7 +288,7 @@ function addChoiceArt(){
  document.querySelectorAll('.build-options [data-choice] button').forEach(button=>{
   const key=button.dataset.value;
   const group=button.closest('[data-choice]').dataset.choice;
-  const art=(group==='weapon'&&key==='heavy')?'<rect x="6" y="16" width="30" height="19" rx="5" fill="#ffb16b"/><rect x="30" y="19" width="14" height="13" rx="3" fill="#ffe39d"/><circle cx="15" cy="25" r="5" fill="#56306b"/>':choiceArt[key];
+  const art=(group==='chassis'&&key==='heavy')?'<path d="M24 5 L40 13 V26 Q35 37 24 42 Q13 37 8 26 V13 Z" fill="#ffbd82"/><path d="M24 11 L34 16 V26 L24 35 L14 26 V16 Z" fill="#5b367c"/><path d="M24 11 V35" stroke="#ffbd82" stroke-width="3"/>':(group==='weapon'&&key==='heavy')?'<rect x="6" y="16" width="30" height="19" rx="5" fill="#ffb16b"/><rect x="30" y="19" width="14" height="13" rx="3" fill="#ffe39d"/><circle cx="15" cy="25" r="5" fill="#56306b"/>':choiceArt[key];
   if(!art)return;
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox','0 0 48 48');svg.setAttribute('aria-hidden','true');svg.setAttribute('class','choice-art');
