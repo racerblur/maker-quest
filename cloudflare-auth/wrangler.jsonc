@@ -8,7 +8,7 @@
     {
       "binding": "DB",
       "database_name": "maker-quest-staging-db",
-      "database_id": "REPLACE_WITH_STAGING_D1_DATABASE_UUID"
+      "database_id": "0a1cea72-f767-480f-8748-0bccbb01aaf9"
     }
   ]
 }
