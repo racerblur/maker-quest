@@ -43,14 +43,65 @@ color:white;font-size:2rem;cursor:pointer}
 @keyframes questLineArrival{from{transform:scaleX(0);opacity:.3}to{transform:scaleX(1);opacity:1}}
 @keyframes questLineBreath{0%,100%{filter:brightness(1);box-shadow:0 0 8px #65ecff,0 0 17px #65ecff66}50%{filter:brightness(1.35);box-shadow:0 0 13px #93faff,0 0 26px #93faffaa}}
 @media(prefers-reduced-motion:reduce){.controls .dot,.controls .dot::after,.controls #prev,.controls #next{transition:none!important;animation:none!important}}
-@media (pointer:coarse){.controls button{min-width:48px;min-height:48px}.controls .dot,.controls .dot.active{min-width:42px;min-height:4px}.map-pin,.claim-btn,.reset-btn{touch-action:manipulation}.card{touch-action:pan-y}}.stage{touch-action:pan-y;user-select:none;-webkit-user-select:none}</style></head><body><header><div class="brand">MAKER <span>QUEST</span></div><nav><a href="about.html" style="display:inline-block;background:#ffcb66;color:#29163e;padding:10px 16px;border-radius:12px;font-weight:900">About Maker Fest</a><a href="#experience">Experience</a><a href="#experience">Games</a><a href="#experience">Sponsors</a></nav></header><main><div class="tag">Maker Fest companion experience · Proposal concept</div><h1>Build. <em>Explore.</em><br>Discover.</h1><p class="intro">Turn a day at Maker Fest into an adventure: explore exhibits, collect digital achievements, discover robot games, and connect with makers.</p><section id="experience" aria-label="Interactive proposal cards"><div class="stage">
+@media (pointer:coarse){.controls button{min-width:48px;min-height:48px}.controls .dot,.controls .dot.active{min-width:42px;min-height:4px}.map-pin,.claim-btn,.reset-btn{touch-action:manipulation}.card{touch-action:pan-y}}.stage{touch-action:pan-y;user-select:none;-webkit-user-select:none}</style><style>
+.mobile-sponsor-toggle{display:none}
+@media(max-width:650px){
+ html,body{width:100%;max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
+ body{min-height:100dvh}
+ header{height:52px;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;padding:5px 12px;gap:5px}
+ .brand{font-size:1rem;white-space:nowrap;letter-spacing:.06em}
+ nav{width:auto;display:block;text-align:right}
+ nav a:first-child{display:inline-block!important;font-size:.73rem!important;padding:7px 9px!important;margin:0;border-radius:9px!important;white-space:nowrap}
+ main{height:calc(100dvh - 52px);min-height:0;max-width:100%;padding:4px 12px 8px;display:flex;flex-direction:column;overflow:hidden}
+ main>.tag{flex:0 0 auto;margin:5px 0 2px;font-size:clamp(.54rem,1.9vw,.68rem);letter-spacing:.15em;line-height:1.3}
+ main>h1{flex:0 0 auto;margin:3px 0 0;font-size:clamp(1.85rem,7.6vw,3rem);line-height:1.01;letter-spacing:-.05em}
+ main>.intro{flex:0 0 auto;margin:6px auto 4px;max-width:390px;font-size:clamp(.72rem,2.8vw,.9rem);line-height:1.35}
+ #experience{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:stretch;width:100%}
+ #experience .stage{flex:1 1 0;min-height:0;height:auto;margin:3px 0 0;perspective:none;overflow:hidden;isolation:isolate}
+ #experience .card{top:50%;left:50%;margin:0;width:min(88vw,370px);height:min(100%,490px);max-height:100%;padding:12px 13px 14px;transform-origin:center center;translate:-50% -50%;border-radius:17px;gap:5px}
+ #experience .card[data-pos="0"]{transform:translateX(0) rotateY(0) scale(1);opacity:1}
+ #experience .card[data-pos="-1"],#experience .card[data-pos="1"]{transform:translateX(75%) scale(.75);opacity:0;pointer-events:none}
+ #experience .card[data-pos="-1"]{transform:translateX(-75%) scale(.75)}
+ #experience .card[data-pos="-2"],#experience .card[data-pos="2"],#experience .card[data-pos="-3"],#experience .card[data-pos="3"]{opacity:0;pointer-events:none}
+ #experience .card h2{flex:0 0 auto;font-size:clamp(1.1rem,4.5vw,1.55rem);margin:0}
+ #experience .card .art{flex:1 1 0;min-height:0;height:auto;width:100%;font-size:clamp(3.4rem,16vw,6rem)}
+ #experience .card .art img{object-fit:contain}
+ #experience .card p{flex:0 0 auto;font-size:clamp(.73rem,2.9vw,.9rem);line-height:1.25}
+ #experience .card-action{flex:0 0 auto;margin:0;font-size:.72rem}
+ #experience .controls{flex:0 0 auto;width:100%;gap:9px;min-height:38px;margin:2px 0 0;justify-content:space-between}
+ #experience .controls button{font-size:1.75rem;min-width:35px;min-height:35px;padding:0 3px}
+ #experience .controls .dots{flex:1;min-width:0;justify-content:center;gap:5px}
+ #experience .controls .dot,#experience .controls .dot.active{width:clamp(15px,6vw,27px);min-width:0;height:3px;min-height:3px;flex:1 1 0;max-width:29px}
+ .mobile-sponsor-toggle{display:block;flex:0 0 auto;align-self:center;border:1px solid #ab83e2;border-radius:10px;background:#352153;color:#e8ddff;padding:6px 13px;font-size:.73rem;font-weight:800;margin:4px auto 0}
+ main>.details,main>.note,main>section:not(#experience):not(.details),main>.quest-modal{display:none}
+ body.sponsor-open{overflow-y:auto}
+ body.sponsor-open main{height:auto;min-height:100dvh;overflow:visible}
+ body.sponsor-open main>.details{display:block;margin:16px auto!important;width:100%}
+ body.sponsor-open main>.details .demo-layout{grid-template-columns:1fr}
+ body.sponsor-open main>.details .demo-map{min-height:300px}
+ body.sponsor-open #experience{min-height:55dvh}
+ body.sponsor-open #experience .stage{min-height:380px}
+ footer{display:none}
+ .quest-modal:not([hidden]){display:grid!important}
+ .quest-dialog{padding:20px;max-height:80dvh}
+}
+@media(max-width:650px) and (max-height:680px){
+ header{height:43px}
+ main{height:calc(100dvh - 43px)}
+ main>.tag{font-size:.55rem}
+ main>h1{font-size:1.8rem}
+ main>.intro{font-size:.72rem;line-height:1.25}
+ #experience .card{padding:8px 10px}
+ #experience .controls{min-height:32px}
+}
+</style></head><body><header><div class="brand">MAKER <span>QUEST</span></div><nav><a href="about.html" style="display:inline-block;background:#ffcb66;color:#29163e;padding:10px 16px;border-radius:12px;font-weight:900">About Maker Fest</a><a href="#experience">Experience</a><a href="#experience">Games</a><a href="#experience">Sponsors</a></nav></header><main><div class="tag">Maker Fest companion experience · Proposal concept</div><h1>Build. <em>Explore.</em><br>Discover.</h1><p class="intro">Turn a day at Maker Fest into an adventure: explore exhibits, collect digital achievements, discover robot games, and connect with makers.</p><section id="experience" aria-label="Interactive proposal cards"><div class="stage">
 <article class="card" data-pos="0"><h2>Meet K9</h2><div class="art"><img src="assets/k9-original.png" alt="Original blue K9 robot dog mascot"></div><p>The friendly face of Maker Quest.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="-3"><h2>Video Showcase</h2><div class="art" aria-hidden="true">🎬</div><p>Watch five maker, robotics, 4-H and Power Racing outreach videos.</p><span class="card-action">TAP TO WATCH ↗</span></article>
 <article class="card" data-pos="1"><h2>Companion App</h2><div class="art" aria-hidden="true">🗺️</div><p>Explore a sample festival map, schedule, workshops &amp; digital Maker Passport.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="2"><h2>Bot Battle Arena</h2><div class="art" aria-hidden="true">🤖</div><p>Prototype: pick parts, customize a bot, and enter a simulated arena.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="-2"><h2>Sponsorships</h2><div class="art" aria-hidden="true">🏆</div><p>Demo sponsor placements, branded challenges, and digital passport rewards.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
 <article class="card" data-pos="-1"><h2>Power Racers</h2><div class="art" aria-hidden="true">🏎️</div><p>Play a top-down electric racer arcade challenge.</p><span class="card-action">TAP TO EXPLORE ↗</span></article>
-</div><div class="controls"><button id="prev" aria-label="Previous card">‹</button><div class="dots" id="dots"></div><button id="next" aria-label="Next card">›</button></div></section><section class="details" style="max-width:1000px;margin:35px auto;text-align:left">
+</div><div class="controls"><button id="prev" aria-label="Previous card">‹</button><div class="dots" id="dots"></div><button id="next" aria-label="Next card">›</button></div></section><button type="button" id="showSponsorDemo" class="mobile-sponsor-toggle" aria-expanded="false">🏆 Explore sponsorship demo</button><section class="details" id="sponsorDemo" style="max-width:1000px;margin:35px auto;text-align:left">
 <h2 style="text-align:center;font-size:2rem">Explore the sponsorship experience</h2>
 <p style="text-align:center;color:#dcd2f3">Clickable demonstration using fictional sponsors and sample festival activities.</p>
 <div class="demo-layout">
@@ -98,6 +149,17 @@ document.getElementById("claim").addEventListener("click",()=>{earned.add(curren
 document.getElementById("reset-badges").addEventListener("click",()=>{earned.clear();renderBadges();chooseSpot(currentSpot)});
 </script>
 <script>
+const sponsorToggle=document.getElementById('showSponsorDemo');
+const sponsorSection=document.getElementById('sponsorDemo');
+sponsorToggle.addEventListener('click',()=>{
+ const opened=document.body.classList.toggle('sponsor-open');
+ sponsorToggle.setAttribute('aria-expanded',String(opened));
+ sponsorToggle.textContent=opened?'✕ Close sponsorship demo':'🏆 Explore sponsorship demo';
+ if(opened)requestAnimationFrame(()=>sponsorSection.scrollIntoView({behavior:'smooth',block:'start'}));
+ else window.scrollTo({top:0,behavior:'smooth'});
+});
+</script>
+<script>
 const cardDetails=[
  {title:"Meet K9",body:"<p>Meet K9, the original blue robot dog and the mascot of Maker Quest. K9 welcomes visitors to the festival experience, while the app helps them explore exhibits, activities, and challenges.</p><p><strong>Design note:</strong> The approved K9 artwork is used unchanged.</p>"},
  {title:"Companion App",body:"<p>A proposed mobile-friendly guide for navigating Maker Fest.</p><ul><li>Find exhibits and demonstrations on a festival map</li><li>Browse workshops and presentation schedules</li><li>Collect achievements in a digital Maker Passport</li><li>Discover challenges at participating booths</li></ul><p>Explore the interactive prototype. All schedules, exhibitors, and map locations are labeled as samples until confirmed.</p>"},
@@ -114,7 +176,7 @@ function activateCard(i){
  const title=cards[i].querySelector('h2').textContent;
  const routes={'Video Showcase':'videos.html','Power Racers':'power-racers.html','Companion App':'companion.html','Bot Battle Arena':'bot-battle.html'};
  if(routes[title]){window.location.href=routes[title];return}
- if(title==='Sponsorships'){document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(title==='Sponsorships'){document.body.classList.add('sponsor-open');sponsorToggle.setAttribute('aria-expanded','true');sponsorToggle.textContent='✕ Close sponsorship demo';document.querySelector('.details').scrollIntoView({behavior:'smooth',block:'start'});return}
  returnFocus=document.activeElement;
  document.getElementById('quest-title').textContent=title;
  document.getElementById('quest-content').innerHTML=cardDetails[0].body;
