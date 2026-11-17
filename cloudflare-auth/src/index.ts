@@ -9,6 +9,7 @@ interface Env {
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
   STAGING_ORIGIN: string;
+  RESEND_API_KEY: string;
 }
 
 function authFor(env: Env) {
@@ -27,12 +28,39 @@ function authFor(env: Env) {
       // Email delivery must be configured before public registration.
       requireEmailVerification: true,
     },
+    emailVerification: {
+  sendOnSignUp: true,
+  async sendVerificationEmail({ user, url }) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Maker Quest <onboarding@resend.dev>",
+        to: [user.email],
+        subject: "Verify your Maker Quest email",
+        text: `Welcome to Maker Quest!\n\nVerify your email address using this link:\n${url}\n\nIf you didn't request this, you can ignore this email.`,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Resend email failed: ${response.status}`);
+    }
+  },
+},
   });
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (!env.DB || !env.BETTER_AUTH_SECRET || !env.BETTER_AUTH_URL || !env.STAGING_ORIGIN) {
+    if (
+  !env.BETTER_AUTH_SECRET ||
+  !env.BETTER_AUTH_URL ||
+  !env.STAGING_ORIGIN ||
+  !env.RESEND_API_KEY
+) {
       return new Response("Staging authentication is not configured", {
         status: 503,
       });
