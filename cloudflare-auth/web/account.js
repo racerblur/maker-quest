@@ -10,7 +10,8 @@ async function run(fn){try{await fn()}catch(error){status.textContent=error.mess
 async function session(){
  const result=await api('get-session'), signedIn=!!result?.user;
  $('signed-in').hidden=!signedIn; $('signed-out').hidden=signedIn; $('logout').hidden=!signedIn;
- status.textContent=signedIn?'Signed in as '+result.user.email:'Signed out';
+ const passkeyAccount=signedIn&&result.user.email===`passkey-${result.user.id}@accounts.maker-quest.invalid`;
+ status.textContent=signedIn?'Signed in as '+(passkeyAccount?result.user.name:result.user.email):'Signed out';
  if(signedIn)HTMLFormElement.prototype.reset.call($('form'));
 }
 const credentials=()=>({email:$('email').value,password:$('password').value});
@@ -27,4 +28,4 @@ $('google').onclick=()=>run(async()=>{
  try{const result=await api('sign-in/social',{provider:'google',callbackURL:location.origin+'/account.html',errorCallbackURL:location.origin+'/account.html?google=failed'});if(!result.url)throw new Error('Could not open Google. Please try again.');location.assign(result.url)}
  catch(error){$('google').disabled=false;$('google').textContent='Continue with Google';throw error}
 });
-run(async()=>{const config=await(await fetch('/api/config')).json();$('google').disabled=!config.google;for(const id of ['register','login','resend','recover'])$(id).disabled=!config.email;$('configuration').textContent=config.google?'':'Google sign-in is temporarily unavailable.';$('email-note').textContent=config.restrictedEmailSender?'Email sign-up and password reset are limited during staging. Please use Google sign-in.':!config.email?'Email sign-in is currently unavailable.':'';await session();if(new URLSearchParams(location.search).get('google')==='failed')status.textContent='Google sign-in did not complete. Please try again.'});
+run(async()=>{const config=await(await fetch('/api/config')).json();$('google').disabled=!config.google;for(const id of ['register','login','resend','recover'])$(id).disabled=!config.email;$('configuration').textContent=config.google?'':'Google sign-in is temporarily unavailable.';$('email-note').textContent=config.restrictedEmailSender?'Email sign-up and password reset are limited during staging. New users can create an account with a passkey.':!config.email?'Email sign-in is currently unavailable.':'';await session();if(new URLSearchParams(location.search).get('google')==='failed')status.textContent='Google sign-in did not complete. Please try again.'});

@@ -27,7 +27,7 @@ const mf=new Miniflare(convertV4MiniflareOptions({port:8788,host:"127.0.0.1",wor
 }}]}));
 try{
  const db=await mf.getD1Database('DB');
- for(const file of ['0001_auth_schema.sql','0002_progress.sql']){
+ for(const file of ['0001_auth_schema.sql','0002_progress.sql','0003_passkeys.sql']){
   const sql=await readFile(new URL('../migrations/'+file,import.meta.url),'utf8');
   for(const statement of sql.split(';').map(s=>s.trim()).filter(Boolean))await db.prepare(statement).run();
  }
@@ -105,6 +105,55 @@ try{
   await page.goto(origin+'/bot-battle.html');await page.locator('#leaders').filter({hasText:'Test Maker'}).waitFor();
   await page.goto(origin+'/power-racers.html');await page.locator('#raceLeaders').filter({hasText:'Test Maker'}).waitFor();
   await page.goto(origin+'/account.html');await page.locator('#logout').click();await page.getByRole('status').filter({hasText:'Signed out'}).waitFor();await page.goto(origin+'/companion.html');await page.locator('#toast').filter({hasText:'Sign in'}).waitFor();assert.equal(await page.locator('#mapClaim').isDisabled(),true);
+
+  async function authenticator(tab){
+   const protocol=await tab.context().newCDPSession(tab);
+   await protocol.send('WebAuthn.enable');
+   const {authenticatorId}=await protocol.send('WebAuthn.addVirtualAuthenticator',{options:{
+    protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,
+    isUserVerified:true,automaticPresenceSimulation:true,
+   }});
+   return {protocol,authenticatorId};
+  }
+  const first=await browser.newPage();first.on('pageerror',e=>errors.push(e.message));
+  const firstDevice=await authenticator(first);
+  await first.goto(origin+'/account.html');
+  await first.locator('#passkey-name').fill('Passkey Maker');
+  await first.getByRole('button',{name:'Create account with a passkey'}).click();
+  await first.locator('#passkey-code-list').waitFor();
+  const codes=(await first.locator('#passkey-code-list').textContent()).split('\n');
+  assert.equal(codes.length,8);assert.equal(new Set(codes).size,8);
+  assert.equal(await db.prepare('SELECT COUNT(*) AS n FROM passkey_recovery WHERE code_hash = ?').bind(codes[0]).first('n'),0);
+  await first.getByRole('button',{name:'I saved my codes'}).click();
+  await first.getByRole('button',{name:'Sign in with a passkey'}).click();
+  await first.getByRole('status').filter({hasText:'Signed in as Passkey Maker'}).waitFor();
+  const passkeyUser=await first.request.get(origin+'/api/auth/get-session').then(r=>r.json());
+  assert.equal(passkeyUser.user.emailVerified,false);
+  assert.equal((await first.request.put(origin+'/api/progress',{data:{badges:['art']},headers:{Origin:origin}})).status(),200);
+  await firstDevice.protocol.send('WebAuthn.removeVirtualAuthenticator',{authenticatorId:firstDevice.authenticatorId});
+  await authenticator(first);
+  await first.getByRole('button',{name:'Add a backup passkey'}).click();
+  await first.getByRole('status').filter({hasText:'Backup passkey added'}).waitFor();
+  assert.equal(await db.prepare('SELECT COUNT(*) AS n FROM passkey WHERE userId = ?').bind(passkeyUser.user.id).first('n'),2);
+
+  const replacement=await browser.newPage();replacement.on('pageerror',e=>errors.push(e.message));
+  await authenticator(replacement);
+  await replacement.goto(origin+'/account.html');
+  await replacement.getByText('Use a recovery code').click();
+  await replacement.locator('#passkey-code').fill(codes[0]);
+  await replacement.getByRole('button',{name:'Replace your passkeys'}).click();
+  await replacement.getByRole('status').filter({hasText:'Your old passkeys were replaced'}).waitFor();
+  assert.equal((await first.request.get(origin+'/api/progress')).status(),401);
+  assert.equal(await db.prepare('SELECT COUNT(*) AS n FROM passkey WHERE userId = ?').bind(passkeyUser.user.id).first('n'),1);
+  const repeated=await call('/api/passkey/start',{code:codes[0]});
+  assert.equal(repeated.status,400);
+  assert.equal((await call('/api/passkey/start',{name:'Rejected'},'','POST','https://other.test')).status,403);
+  await replacement.getByRole('button',{name:'Sign in with a passkey'}).click();
+  await replacement.getByRole('status').filter({hasText:'Signed in as Passkey Maker'}).waitFor();
+  assert.deepEqual(await replacement.request.get(origin+'/api/progress').then(r=>r.json()),{badges:['art']});
+  await first.close();
+  await replacement.close();
+  console.log('PASS Chromium passkey signup, sign-in, backup, one-time recovery, old session revocation and saved progress');
   assert.deepEqual(errors,[]);console.log('PASS Chromium login, reload persistence, badge claim/reload, both leaderboard displays, logout and passport lock');
  } finally {await browser.close()}
  console.log('ALL LOCAL INTEGRATION AND BROWSER CHECKS PASSED. Resend and Google provider responses mocked.');

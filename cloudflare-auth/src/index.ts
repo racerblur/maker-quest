@@ -1,4 +1,6 @@
 import { betterAuth } from 'better-auth';
+import { passkey } from '@better-auth/passkey';
+import { passkeyEmail, passkeyEnrollment, passkeyOrigin } from './passkey-enrollment';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { drizzle } from 'drizzle-orm/d1';
 import * as schema from './schema';
@@ -55,6 +57,12 @@ export function authFor(env: AppEnv, mail: MailResult = {}) {
       sendOnSignUp: true, sendOnSignIn: true, autoSignInAfterVerification: true,
       sendVerificationEmail: async ({user, url}) => send(user.email, 'Verify your Maker Quest email', url),
     },
+    plugins: [passkey({
+      rpID: new URL(env.BETTER_AUTH_URL).hostname,
+      rpName: 'Maker Quest staging',
+      origin: passkeyOrigin(env.BETTER_AUTH_URL),
+      authenticatorSelection: {residentKey:'required', userVerification:'required'},
+    })],
     socialProviders: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? {
       google: {clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET},
     } : {},
@@ -72,6 +80,12 @@ export default {
       restrictedEmailSender: !!env.EMAIL_FROM?.includes('@resend.dev'),
     });
     if (!env.BETTER_AUTH_SECRET || !env.BETTER_AUTH_URL) return json({message: 'Staging authentication is not configured'}, 503);
+    if (path.startsWith('/api/passkey/')) {
+      return passkeyEnrollment(request, env.DB, passkeyOrigin(env.BETTER_AUTH_URL));
+    }
+    if (path === '/api/auth/passkey/delete-passkey') {
+      return json({message:'Use a recovery code to replace your passkeys.'}, 405);
+    }
     // Request-scoped state: never share delivery results across users or isolates.
     const mail: MailResult = {};
     const auth = authFor(env, mail);
@@ -87,7 +101,9 @@ export default {
     if (path.startsWith('/api/')) {
       if (request.method !== 'GET' && request.headers.get('Origin') !== new URL(env.BETTER_AUTH_URL).origin) return json({message: 'Origin not allowed'}, 403);
       const session = await auth.api.getSession({headers: request.headers});
-      if (!session?.user.emailVerified) return json({message: 'Sign in with a verified account'}, 401);
+      if (!session || (!session.user.emailVerified && session.user.email !== passkeyEmail(session.user.id))) {
+        return json({message: 'Sign in with a verified account'}, 401);
+      }
       const userId = session.user.id;
       if (path === '/api/progress' && request.method === 'GET') {
         const rows = await env.DB.prepare('SELECT badge FROM badge WHERE userId = ? ORDER BY badge').bind(userId).all<{badge:string}>();
