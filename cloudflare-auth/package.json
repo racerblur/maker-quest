@@ -6,7 +6,7 @@
     "deploy": "npm run build && wrangler deploy",
     "auth:generate": "better-auth generate",
     "build": "node scripts/build-pages.mjs",
-    "check": "wrangler types && tsc --noEmit",
+    "check": "npm run build && wrangler types && tsc --noEmit",
     "test": "npm run build && wrangler deploy --dry-run --outdir .test-build && node tests/integration.mjs"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261117.1",
     "@playwright/test": "1.65.1",
+    "jose": "6.2.17",
     "miniflare": "5.20261117.0-beta",
     "typescript": "7.0.2",
     "wrangler": "4.164.0"

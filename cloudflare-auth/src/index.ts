@@ -20,7 +20,7 @@ export function authFor(env: AppEnv, mail: MailResult = {}) {
     }).catch(() => {mail.failed={code:'EMAIL_PROVIDER_UNAVAILABLE',message:'Email was not sent because the email service could not be reached. Please try again or use Google sign-in.',providerStatus:0};console.error(JSON.stringify({event:'auth_email_failed',code:mail.failed.code,status:0}));throw new Error(mail.failed.code)});
     if (!response.ok) {
       const body = await response.json().catch(() => ({})) as {name?:string;message?:string};
-      const detail = body.message || '';
+      const detail = typeof body?.message === 'string' ? body.message : '';
       const code = /testing emails|own email|test.*recipient/i.test(detail) ? 'EMAIL_TEST_RECIPIENT_RESTRICTED'
         : /domain.*verif|verif.*domain/i.test(detail) ? 'EMAIL_DOMAIN_NOT_VERIFIED'
         : response.status === 401 ? 'EMAIL_PROVIDER_UNAUTHORIZED'
@@ -30,8 +30,14 @@ export function authFor(env: AppEnv, mail: MailResult = {}) {
         : code === 'EMAIL_DOMAIN_NOT_VERIFIED' ? 'Verification email was not sent because the sending domain is not verified. Please use Google sign-in.'
         : 'The email provider rejected the message. Email was not sent. Please try again later or use Google sign-in.';
       mail.failed = {code,message,providerStatus:response.status};
-      console.error(JSON.stringify({event:'auth_email_failed',status:response.status,code,providerError:typeof body.name === 'string' ? body.name.replace(/[^a-z_]/gi,'').slice(0,60) : 'unknown'}));
+      console.error(JSON.stringify({event:'auth_email_failed',status:response.status,code,providerError:typeof body?.name === 'string' ? body.name.replace(/[^a-z_]/gi,'').slice(0,60) : 'unknown'}));
       throw new Error(code);
+    }
+    const receipt = await response.json().catch(() => null) as {id?: unknown} | null;
+    if (typeof receipt?.id !== 'string' || !receipt.id.trim()) {
+      mail.failed = {code:'EMAIL_PROVIDER_INVALID_RECEIPT',message:'The email provider did not confirm acceptance. Please try again later or use Google sign-in.',providerStatus:response.status};
+      console.error(JSON.stringify({event:'auth_email_failed',status:response.status,code:mail.failed.code}));
+      throw new Error(mail.failed.code);
     }
     mail.accepted = true;
     console.log(JSON.stringify({event:'auth_email_accepted',status:response.status}));
