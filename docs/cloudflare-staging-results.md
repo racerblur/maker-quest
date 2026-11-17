@@ -1,3 +1,32 @@
+# Latest email failure diagnosis — 2026-11-17
+
+Staging: https://maker-quest-auth-staging.racerblur.workers.dev/account.html
+Deployment: `4c4334f608244896b155ac3b56b034fd`.
+
+## Confirmed cause and correction
+
+Worker logs originally recorded Resend HTTP 403 during registration. The deployed sender now parses the actual Resend error response into a safe classification. A fresh synthetic registration returned HTTP 502, `EMAIL_TEST_RECIPIENT_RESTRICTED`, providerStatus 403, emailSent false. Worker logs independently record `providerError: validation_error` and the same classification. The sender is `onboarding@resend.dev`; Resend rejects additional recipients with its testing-recipient restriction. A verified sending domain is still needed. No Resend account integration is available here; no domain or API key has been changed.
+
+Better Auth 1.7.25 catches verification-email exceptions in `runInBackgroundOrAwait` and returns a successful registration response. The Worker now records send outcomes per request and overrides that misleading response on failure. Transport failures have a timeout and a separate error. Responses distinguish acceptance by the email service from delivery to an inbox. Logs contain safe provider error type/status/classification, never full provider messages, email addresses, credentials or verification links. Existing user records are retained after send failure; use resend after sender configuration is repaired.
+
+## Direct Google OAuth
+
+Better Auth uses `socialProviders.google` with Worker secrets and D1. No Firebase SDK or Firebase Authentication participates. Both Google secret bindings are configured. A D1 aggregate query confirms one Google provider account with a verified user, consistent with the user's successful sign-in report. Repeating interactive Google sign-in as the user still requires user interaction; server OAuth initiation was verified separately. The client secret itself cannot be inspected through Cloudflare's secret API.
+
+## Current verified tests
+
+- TypeScript and deployment packaging passed.
+- Local D1/runtime: registration, verification links, unverified login rejection, login, logout/revocation, session persistence, password reset and old-password/session invalidation, single-use reset tokens, account isolation, badges and both score tables passed. Email acceptance is mocked locally.
+- Local rejected Resend response: registration, resend and password recovery return explicit HTTP 502; Chromium shows the failure instead of check-inbox success.
+- Deployed: real Resend rejection reproduced and verified in Worker logs; synthetic-account login, reload persistence, badge save/reload, both leaderboard displays, logout and anonymous-access rejection passed. That synthetic account was manually verified earlier; it does not prove email verification.
+- Not verified: successful delivery to additional real inboxes or clicking a real delivered verification/recovery link. Those require a verified sending domain and an inbox owner. No full game rounds were played.
+
+Only the separate Cloudflare staging Worker was updated. All secret bindings, D1 data, Firebase, Supabase and production deployments were preserved. No paid service enabled.
+
+---
+
+## Earlier staging report (historical)
+
 # Cloudflare staging results — 2026-11-17
 
 ## Deployment

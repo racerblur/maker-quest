@@ -15,8 +15,8 @@ async function session(){
 }
 const credentials=()=>({email:$('email').value,password:$('password').value});
 $('form').onsubmit=e=>{e.preventDefault();run(async()=>{await api('sign-in/email',credentials());await session()})};
-$('register').onclick=()=>run(async()=>{if(!$('form').reportValidity())return;await api('sign-up/email',{...credentials(),name:$('name').value||'Maker',callbackURL:location.origin+'/account.html'});status.textContent='Registration submitted. Check your inbox. Delivery is not confirmed by this response.'});
-$('resend').onclick=()=>run(async()=>{await api('send-verification-email',{email:$('email').value,callbackURL:location.origin+'/account.html'});status.textContent='Verification requested. Check your inbox.'});
+$('register').onclick=()=>run(async()=>{if(!$('form').reportValidity())return;const result=await api('sign-up/email',{...credentials(),name:$('name').value||'Maker',callbackURL:location.origin+'/account.html'});status.textContent=result.emailStatus==='accepted'?'The email service accepted your verification email. Check your inbox and spam folder.':'No new verification email was confirmed. Try Resend verification email, or sign in with Google.'});
+$('resend').onclick=()=>run(async()=>{const result=await api('send-verification-email',{email:$('email').value,callbackURL:location.origin+'/account.html'});status.textContent=result.emailStatus==='accepted'?'The email service accepted your verification email. Check your inbox and spam folder.':'If the account is eligible, a verification email has been requested.'});
 $('recover').onclick=()=>run(async()=>{await api('request-password-reset',{email:$('email').value,redirectTo:location.origin+'/account.html'});status.textContent='If the account exists, a reset email has been requested.'});
 const token=new URLSearchParams(location.search).get('token');
 if(token){$('reset').hidden=false;$('login').hidden=true;$('email-options').open=true;$('email').required=false;$('password').autocomplete='new-password';}

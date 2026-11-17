@@ -4,9 +4,9 @@ import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 const origin='http://localhost:8788';
-const mail=[];
+const mail=[];let mailFailure=false;
 const mf=new Miniflare(convertV4MiniflareOptions({port:8788,host:"127.0.0.1",workers:[{rootPath:fileURLToPath(new URL('../',import.meta.url)),modules:[{type:'ESModule',path:fileURLToPath(new URL('../.test-build/index.js',import.meta.url))}],compatibilityDate:'2026-11-15',compatibilityFlags:['nodejs_compat'],d1Databases:['DB'],bindings:{BETTER_AUTH_SECRET:'local-only-test-secret-at-least-32-characters',BETTER_AUTH_URL:origin,EMAIL_FROM:'Maker Quest <test@example.test>',RESEND_API_KEY:'local-test-only'},outboundService:async request=>{
- assert.equal(new URL(request.url).hostname,'api.resend.com');mail.push(await request.json());return new Response(JSON.stringify({id:'mock-mail'}),{headers:{'Content-Type':'application/json'}});
+ assert.equal(new URL(request.url).hostname,'api.resend.com');mail.push(await request.json());if(mailFailure)return new Response(JSON.stringify({name:'validation_error',message:'You can only send testing emails to your own email address.'}),{status:403,headers:{'Content-Type':'application/json'}});return new Response(JSON.stringify({id:'mock-mail'}),{headers:{'Content-Type':'application/json'}});
 }}]}));
 try{
  const db=await mf.getD1Database('DB');
@@ -18,8 +18,15 @@ try{
   const r=await mf.dispatchFetch(origin+path,{redirect:'manual',method:data?method:'GET',headers:{Origin:requestOrigin,'Content-Type':'application/json',Cookie:cookie},...(data?{body:JSON.stringify(data)}:{})});
   const text=await r.text();let result;try{result=JSON.parse(text)}catch{result=text}return {status:r.status,result,cookie:r.headers.getSetCookie().map(v=>v.split(';')[0]).join('; '),headers:r.headers};
  }
+ mailFailure=true;
+ const failed=await call('/api/auth/sign-up/email',{name:'Rejected Mail',email:'rejected@example.test',password:'Strong-test-password-17'});
+ assert.equal(failed.status,502);assert.equal(failed.result.code,'EMAIL_TEST_RECIPIENT_RESTRICTED');assert.equal(failed.result.emailSent,false);
+ assert.equal((await call('/api/auth/send-verification-email',{email:'rejected@example.test'})).status,502);
+ assert.equal((await call('/api/auth/request-password-reset',{email:'rejected@example.test'})).status,502);
+ console.log('PASS Resend 403 propagates to registration, resend and recovery despite Better Auth swallowing exceptions');
+ mailFailure=false;mail.length=0;
  const signup=await call('/api/auth/sign-up/email',{name:'Test Maker',email:'maker@example.test',password:'Strong-test-password-17',callbackURL:origin+'/account.html'});
- assert.equal(signup.status,200,JSON.stringify(signup.result));assert.equal(signup.result.token,null);assert.equal(mail.length,1);console.log('PASS registration sends verification through mocked Resend');
+ assert.equal(signup.status,200,JSON.stringify(signup.result));assert.equal(signup.result.token,null);assert.equal(signup.result.emailStatus,'accepted');assert.equal(mail.length,1);console.log('PASS registration sends verification through mocked Resend');
  assert.equal((await call('/api/auth/sign-in/email',{email:'maker@example.test',password:'Strong-test-password-17'})).status,403);console.log('PASS unverified login blocked');
  const verifyURL=new URL(mail[0].text.match(/https?:\/\/\S+/)[0]);
  const verification=await call(verifyURL.pathname+verifyURL.search);assert.equal(verification.status,302);let cookie=verification.cookie;
@@ -50,7 +57,9 @@ try{
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  try {
   const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(origin+'/account.html');await page.locator('#email-options summary').click();await page.locator('#email').fill('maker@example.test');await page.locator('#password').fill('New-password-test-17');await page.locator('#login').click();await page.getByRole('status').filter({hasText:'Signed in as'}).waitFor();
+  await page.goto(origin+'/account.html');await page.locator('#email-options summary').click();
+  mailFailure=true;await page.locator('#email').fill('ui-failure@example.test');await page.locator('#password').fill('Strong-test-password-17');await page.locator('#register').click();await page.getByRole('status').filter({hasText:'Verification email was not sent'}).waitFor();mailFailure=false;console.log('PASS browser displays provider rejection instead of check-inbox success');
+  await page.locator('#email').fill('maker@example.test');await page.locator('#password').fill('New-password-test-17');await page.locator('#login').click();await page.getByRole('status').filter({hasText:'Signed in as'}).waitFor();
   await page.reload();await page.getByRole('status').filter({hasText:'Signed in as'}).waitFor();
   await page.goto(origin+'/companion.html');await page.locator('#toast').filter({hasText:'Progress loaded'}).waitFor();await page.locator('[data-tab="passport"]').click();assert.equal(await page.locator('#progress').textContent(),'2 / 4 badges');
   await page.locator('[data-tab="challenges"]').click();await page.getByRole('button',{name:'Earn demo badge'}).first().click();await page.locator('#toast').filter({hasText:'Badges saved'}).waitFor();await page.reload();await page.locator('#toast').filter({hasText:'Progress loaded'}).waitFor();assert.equal(await page.locator('#progress').textContent(),'3 / 4 badges');

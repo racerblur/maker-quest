@@ -9,18 +9,32 @@ const badges = ['robotics', 'workshop', 'art', 'racing'];
 const games = ['bot-battle', 'power-racers'];
 const json = (value: unknown, status = 200) => Response.json(value, {status, headers: {'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow'}});
 
-export function authFor(env: AppEnv) {
+type MailResult = {failed?: {code:string; message:string; providerStatus:number}; accepted?:boolean};
+export function authFor(env: AppEnv, mail: MailResult = {}) {
   async function send(to: string, subject: string, url: string) {
     if (!env.RESEND_API_KEY || !env.EMAIL_FROM) throw new Error('Email sender is not configured');
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST', headers: {Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json'},
       body: JSON.stringify({from: env.EMAIL_FROM, to: [to], subject, text: `${subject}\n\n${url}\n\nIf you did not request this, ignore this email.`}),
-    });
+      signal: AbortSignal.timeout(10000),
+    }).catch(() => {mail.failed={code:'EMAIL_PROVIDER_UNAVAILABLE',message:'Email was not sent because the email service could not be reached. Please try again or use Google sign-in.',providerStatus:0};console.error(JSON.stringify({event:'auth_email_failed',code:mail.failed.code,status:0}));throw new Error(mail.failed.code)});
     if (!response.ok) {
-      // Do not log recipient addresses, tokens, links, or provider response bodies.
-      console.error(JSON.stringify({event: 'auth_email_failed', status: response.status}));
-      throw new Error(`Email delivery failed (${response.status})`);
+      const body = await response.json().catch(() => ({})) as {name?:string;message?:string};
+      const detail = body.message || '';
+      const code = /testing emails|own email|test.*recipient/i.test(detail) ? 'EMAIL_TEST_RECIPIENT_RESTRICTED'
+        : /domain.*verif|verif.*domain/i.test(detail) ? 'EMAIL_DOMAIN_NOT_VERIFIED'
+        : response.status === 401 ? 'EMAIL_PROVIDER_UNAUTHORIZED'
+        : response.status === 429 ? 'EMAIL_RATE_LIMITED' : 'EMAIL_SEND_FAILED';
+      const message = code === 'EMAIL_TEST_RECIPIENT_RESTRICTED'
+        ? 'Verification email was not sent. The staging email sender only permits the Resend account owner. Use Google sign-in, or retry after a verified sending domain is configured.'
+        : code === 'EMAIL_DOMAIN_NOT_VERIFIED' ? 'Verification email was not sent because the sending domain is not verified. Please use Google sign-in.'
+        : 'The email provider rejected the message. Email was not sent. Please try again later or use Google sign-in.';
+      mail.failed = {code,message,providerStatus:response.status};
+      console.error(JSON.stringify({event:'auth_email_failed',status:response.status,code,providerError:typeof body.name === 'string' ? body.name.replace(/[^a-z_]/gi,'').slice(0,60) : 'unknown'}));
+      throw new Error(code);
     }
+    mail.accepted = true;
+    console.log(JSON.stringify({event:'auth_email_accepted',status:response.status}));
   }
   return betterAuth({
     database: drizzleAdapter(drizzle(env.DB, {schema}), {provider: 'sqlite', schema}),
@@ -52,8 +66,18 @@ export default {
       restrictedEmailSender: !!env.EMAIL_FROM?.includes('@resend.dev'),
     });
     if (!env.BETTER_AUTH_SECRET || !env.BETTER_AUTH_URL) return json({message: 'Staging authentication is not configured'}, 503);
-    const auth = authFor(env);
-    if (path.startsWith('/api/auth/')) return auth.handler(request);
+    // Request-scoped state: never share delivery results across users or isolates.
+    const mail: MailResult = {};
+    const auth = authFor(env, mail);
+    if (path.startsWith('/api/auth/')) {
+      const response = await auth.handler(request);
+      if (mail.failed) return json({...mail.failed, emailSent:false, accountMayExist:true}, 502);
+      if (mail.accepted && response.ok && response.headers.get('Content-Type')?.includes('application/json')) {
+        const body = await response.json() as Record<string,unknown>;
+        return new Response(JSON.stringify({...body,emailStatus:'accepted'}), {status:response.status,headers:response.headers});
+      }
+      return response;
+    }
     if (path.startsWith('/api/')) {
       if (request.method !== 'GET' && request.headers.get('Origin') !== new URL(env.BETTER_AUTH_URL).origin) return json({message: 'Origin not allowed'}, 403);
       const session = await auth.api.getSession({headers: request.headers});
