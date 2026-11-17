@@ -1,4 +1,8 @@
+
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { drizzle } from "drizzle-orm/d1";
+import * as schema from "./schema";
 
 interface Env {
   DB: D1Database;
@@ -8,14 +12,19 @@ interface Env {
 }
 
 function authFor(env: Env) {
+  const db = drizzle(env.DB, { schema });
+
   return betterAuth({
-    database: env.DB,
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+      schema,
+    }),
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins: [env.STAGING_ORIGIN],
     emailAndPassword: {
       enabled: true,
-      // Do not deploy publicly until a real email sender and verification flow exist.
+      // Email delivery must be configured before public registration.
       requireEmailVerification: true,
     },
   });
@@ -23,14 +32,18 @@ function authFor(env: Env) {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (!env.BETTER_AUTH_SECRET || !env.BETTER_AUTH_URL || !env.STAGING_ORIGIN) {
-      return new Response("Staging authentication is not configured", { status: 503 });
+    if (!env.DB || !env.BETTER_AUTH_SECRET || !env.BETTER_AUTH_URL || !env.STAGING_ORIGIN) {
+      return new Response("Staging authentication is not configured", {
+        status: 503,
+      });
     }
+
     const url = new URL(request.url);
+
     if (!url.pathname.startsWith("/api/auth/")) {
       return new Response("Not found", { status: 404 });
     }
-    // This API is intentionally not wired into the existing Supabase-backed site.
+
     return authFor(env).handler(request);
   },
 };
