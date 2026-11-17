@@ -3,7 +3,8 @@
 Inspection date: November 17, 2026. Base: `main` at
 `bbf55368c404949448850b5c0be1f97e3e6d984d`. Work branch:
 `firebase-migration-staging`. This is an inspection and implementation plan,
-not a completed migration or production recommendation.
+not a completed migration or production recommendation. The subsequent staging
+implementation and executed checks are recorded in `firebase-staging-results.md`.
 
 ## Verified application and deployment boundary
 
@@ -144,7 +145,7 @@ progress. Rehearse rollback with staging test records first.
 
 ## Acceptance evidence required
 
-Executed so far: repository/branch inspection, source dependency searches,
+Executed at the initial planning checkpoint: repository/branch inspection, source dependency searches,
 comparison of the Cloudflare branch, and read-only HTTP/source comparisons of
 the two public deployments. No auth, persistence, access-control, gameplay,
 Safari, or deployment acceptance test has passed yet.

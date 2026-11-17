@@ -1,0 +1,52 @@
+// Prototype schema (staging only):
+// participants/{uid}: displayName (1..24 chars), createdAt (immutable timestamp),
+// updatedAt (server timestamp). UID comes from the document path, never a field.
+// participants/{uid}/demoBadges/{badgeId}: earnedAt (server timestamp on create,
+// immutable). Four fixed sample booth IDs. These are NOT verified awards.
+// events/{eventId}/rounds/{roundId}/leaders/{entryId}: server-written records;
+// authenticated reads only. Every client write to verified data is denied.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() { return request.auth != null; }
+    function isOwner(uid) { return isAuthenticated() && request.auth.uid == uid; }
+    function isValidParticipant(data) {
+      return data.keys().hasAll(['displayName', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['displayName', 'createdAt', 'updatedAt'])
+        && data.displayName is string
+        && data.displayName.size() >= 1 && data.displayName.size() <= 24
+        && data.displayName.matches('.*[^ ].*')
+        && data.createdAt is timestamp && data.updatedAt == request.time;
+    }
+    function isValidBadge(data, badgeId) {
+      return badgeId in ['robotics', 'workshop', 'art', 'racing']
+        && data.keys().hasAll(['earnedAt']) && data.keys().hasOnly(['earnedAt'])
+        && data.earnedAt is timestamp;
+    }
+    match /participants/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && isValidParticipant(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isOwner(uid) && isValidParticipant(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+      match /demoBadges/{badgeId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && exists(/databases/$(database)/documents/participants/$(uid))
+          && isValidBadge(request.resource.data, badgeId)
+          && request.resource.data.earnedAt == request.time;
+        allow update: if isOwner(uid)
+          && exists(/databases/$(database)/documents/participants/$(uid))
+          && isValidBadge(request.resource.data, badgeId)
+          && request.resource.data == resource.data;
+        allow delete: if isOwner(uid);
+      }
+    }
+    match /events/{eventId}/rounds/{roundId}/leaders/{entryId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
