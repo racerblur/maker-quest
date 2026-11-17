@@ -50,7 +50,7 @@ try{
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  try {
   const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(origin+'/account.html');await page.locator('#email').fill('maker@example.test');await page.locator('#password').fill('New-password-test-17');await page.locator('#login').click();await page.getByRole('status').filter({hasText:'Signed in as'}).waitFor();
+  await page.goto(origin+'/account.html');await page.locator('#email-options summary').click();await page.locator('#email').fill('maker@example.test');await page.locator('#password').fill('New-password-test-17');await page.locator('#login').click();await page.getByRole('status').filter({hasText:'Signed in as'}).waitFor();
   await page.reload();await page.getByRole('status').filter({hasText:'Signed in as'}).waitFor();
   await page.goto(origin+'/companion.html');await page.locator('#toast').filter({hasText:'Progress loaded'}).waitFor();await page.locator('[data-tab="passport"]').click();assert.equal(await page.locator('#progress').textContent(),'2 / 4 badges');
   await page.locator('[data-tab="challenges"]').click();await page.getByRole('button',{name:'Earn demo badge'}).first().click();await page.locator('#toast').filter({hasText:'Badges saved'}).waitFor();await page.reload();await page.locator('#toast').filter({hasText:'Progress loaded'}).waitFor();assert.equal(await page.locator('#progress').textContent(),'3 / 4 badges');
