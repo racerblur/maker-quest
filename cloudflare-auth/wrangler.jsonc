@@ -2,11 +2,14 @@
   "name": "maker-quest-auth-staging",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-15",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "workers_dev": true,
   "vars": {
     "BETTER_AUTH_URL": "https://maker-quest-auth-staging.racerblur.workers.dev",
-    "STAGING_ORIGIN": "https://maker-quest.vercel.app"
+    "STAGING_ORIGIN": "https://maker-quest-auth-staging.racerblur.workers.dev",
+    "EMAIL_FROM": "Maker Quest <onboarding@resend.dev>"
   },
   "d1_databases": [
     {
@@ -14,5 +17,13 @@
       "database_name": "maker-quest-staging-db",
       "database_id": "0a1cea72-f767-480f-8748-0bccbb01aaf9"
     }
-  ]
+  ],
+  "observability": {
+    "enabled": true,
+    "redact_query_string": true,
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.1
+    }
+  }
 }

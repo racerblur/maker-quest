@@ -4,3 +4,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+# Generated static payload; rebuilt before packaging.
+src/pages.generated.ts
+worker-configuration.d.ts
+.test-build/
