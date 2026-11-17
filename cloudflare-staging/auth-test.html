@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maker Quest — Authentication Test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #111827;
+      color: white;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    main {
+      width: min(400px, 90%);
+      background: #1f2937;
+      padding: 28px;
+      border-radius: 16px;
+    }
+    h1 { margin-top: 0; }
+    input, button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      font: inherit;
+    }
+    input { border: 1px solid #9ca3af; }
+    button {
+      border: 0;
+      background: #60a5fa;
+      color: #111827;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: wait; }
+    #status {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Maker Quest</h1>
+    <p>Staging authentication test only</p>
+
+    <form id="authForm">
+      <input id="name" placeholder="Your name"
+             autocomplete="name" required>
+      <input id="email" type="email" placeholder="Gmail address"
+             autocomplete="email" required>
+      <input id="password" type="password"
+             placeholder="Password (8+ characters)"
+             autocomplete="new-password"
+             minlength="8" required>
+
+      <button id="signup" type="submit">Create Test Account</button>
+      <button id="signin" type="button">Sign In</button>
+      <button id="session" type="button">Check Session</button>
+    </form>
+
+    <p id="status" role="status" aria-live="polite">
+      Ready for testing.
+    </p>
+  </main>
+
+  <script>
+    const API =
+      "https://maker-quest-auth-staging.racerblur.workers.dev/api/auth";
+
+    const status = document.getElementById("status");
+    const form = document.getElementById("authForm");
+
+    async function request(path, data) {
+      status.textContent = "Contacting staging server...";
+
+      try {
+        const response = await fetch(API + path, {
+          method: data ? "POST" : "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          ...(data ? { body: JSON.stringify(data) } : {})
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          status.textContent =
+            "Request failed: " +
+            (result.message || result.error || response.status);
+          return;
+        }
+
+        if (path === "/sign-up/email") {
+          status.textContent =
+            "Registration submitted. Check Gmail and Resend " +
+            "for a verification email.";
+        } else if (path === "/get-session") {
+          status.textContent = result?.user
+            ? "Signed in as " + result.user.email +
+              "\nEmail verified: " + result.user.emailVerified
+            : "No active session.";
+        } else {
+          status.textContent = "Request succeeded.";
+        }
+      } catch (error) {
+        status.textContent =
+          "Network or CORS error: " + error.message;
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      request("/sign-up/email", {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+      });
+    });
+
+    document.getElementById("signin").onclick = () => {
+      request("/sign-in/email", {
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+      });
+    };
+
+    document.getElementById("session").onclick = () => {
+      request("/get-session");
+    };
+  </script>
+</body>
+</html>
